@@ -1,3 +1,4 @@
+// License
 /* 
  * MIT License
  * 
@@ -23,36 +24,62 @@
  */
 
 
+#include "../lib/utility.h"
 #include <stdio.h>
 #include <errno.h>
-#include "../lib/utility.h"
 
 int main(){
-    char option = 'y';
-    while ( option == 'y' || option == 'Y' ){
-        printf("\n-> ");
-        char buf[100];
-        
-        // this will convert input into a postfix form using stack.
-        convert_to_postfix(buf);
-        /* printf("%s\n",buf); */
-        
-        // stack for storing the result value
-        LongStack stack;
-        create(stack,5);
-        
-        // this will evaluate the expression we stored into buf
-        evaluateExpression(&stack, buf);
-        
-        // printing the result
-        printf("\n> %lld\n",top(stack));
-        
-        // freeing memory
-        destroy(stack);
-        
-        // if user wants to keep on using the calculator or not
-        printf("\ncontinue? [Y/n] ");
-        scanf("%c",&option);
-        getchar(); // this will store the newline entered by user, otherwise our main code will take it as input
-    } 
+    system("clear");
+
+    int mode = 0;
+    printf("\t\t\tWelcome to Basical\n");
+    printf("\t\t  github.com/Raihan-28011/Basical\n");
+    printf("\t\t\tnoob.04@outlook.com\n");
+    printf("\t==================================================\n");
+    printf("\t1. Basic mode\t2. Binary mode\n\t3. Help\n");
+
+    while (printf("\n\tChoose a mode: ") && scanf("%d", &mode) && (mode != 1 && mode != 2 && mode != 3))
+        printf("\n\tInvalid number.\n\tTry again.\n");
+
+    // eating the new line entered by the user, otherwise our main code will take it as input
+    getchar();
+
+    if (mode == 1) {
+        char option = 'y';
+        while ( option == 'y' || option == 'Y' ){
+            printf("\n\t-> ");
+            char buf[100];
+
+            // this will convert input into a postfix form using stack.
+            convert_to_postfix(buf);
+            /* printf("%s\n",buf); */
+
+            printf("\t--------------------------------------------------\n");
+
+            // stack for storing the result value
+            LongStack stack;
+            create(stack,5);
+
+            // this will evaluate the expression we stored into buf
+            evaluateExpression(&stack, buf);
+
+            // printing the result
+            printf("\t%-48lld\n",top(stack));
+
+            printf("\t--------------------------------------------------\n");
+
+            // freeing memory
+            destroy(stack);
+
+            // if user wants to keep on using the calculator or not
+            printf("\tcontinue? [Y/n] ");
+            scanf("%c",&option);
+            getchar(); // this will eat the newline entered by user, otherwise our main code will take it as input
+        } 
+        system("clear");
+    } else if (mode == 2) {
+        printf("\tWork is going on\n");
+    } else {
+        printf("Work is going on\n");
+    }
 }

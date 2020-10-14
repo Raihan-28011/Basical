@@ -1,3 +1,4 @@
+// License
 /*
  * MIT License
  *
@@ -25,15 +26,7 @@
 
 #include "error.h"
 
-void
-fperror(char const *fname,int errnum, bool ext)
-{
-    fprintf(stderr, "%s: %s\n", fname, errMsg(errnum)); 
-
-    if (ext)
-        exit(-1);
-}
-
+// this is a local strerror implementation
 char const *
 errMsg(int errnum)
 {
@@ -63,4 +56,14 @@ errMsg(int errnum)
     }
 
     return errorMassage;
+}
+
+// same as perror except it can exit the program.
+void
+fperror(char const *fname,int errnum, bool ext)
+{
+    fprintf(stderr, "%s: %s\n", fname, errMsg(errnum)); 
+
+    if (ext)
+        exit(-1);
 }

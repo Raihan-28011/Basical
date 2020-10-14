@@ -1,0 +1,71 @@
+CharCapacity	/home/raihan/repos/basical/lib/stack.c	/^CharCapacity(CharStack *this)$/
+CharCreate	/home/raihan/repos/basical/lib/stack.c	/^CharCreate(CharStack *this,int size)$/
+CharDestroy	/home/raihan/repos/basical/lib/stack.c	/^CharDestroy(CharStack *this)$/
+CharEmpty	/home/raihan/repos/basical/lib/stack.c	/^CharEmpty(CharStack *this)$/
+CharPop	/home/raihan/repos/basical/lib/stack.c	/^CharPop(CharStack *this)$/
+CharPush	/home/raihan/repos/basical/lib/stack.c	/^CharPush(CharStack *this,char val)$/
+CharSize	/home/raihan/repos/basical/lib/stack.c	/^CharSize(CharStack *this)$/
+CharStack	/home/raihan/repos/basical/lib/stack.h	42
+CharTop	/home/raihan/repos/basical/lib/stack.c	/^CharTop(CharStack *this)$/
+EINVI	/home/raihan/repos/basical/lib/error.h	52
+ENOPOSITIVE	/home/raihan/repos/basical/lib/error.h	54
+EOUTRANGE	/home/raihan/repos/basical/lib/error.h	53
+ERROR_H	/home/raihan/repos/basical/lib/error.h	27
+ESTACKEMPT	/home/raihan/repos/basical/lib/error.h	56
+ESTACKNOCRT	/home/raihan/repos/basical/lib/error.h	55
+EUCRTSTACK	/home/raihan/repos/basical/lib/error.h	57
+LDoubleCapacity	/home/raihan/repos/basical/lib/stack.c	/^LDoubleCapacity(LDoubleStack *this)$/
+LDoubleCreate	/home/raihan/repos/basical/lib/stack.c	/^LDoubleCreate(LDoubleStack *this,int size)$/
+LDoubleDestroy	/home/raihan/repos/basical/lib/stack.c	/^LDoubleDestroy(LDoubleStack *this)$/
+LDoublePop	/home/raihan/repos/basical/lib/stack.c	/^LDoublePop(LDoubleStack *this)$/
+LDoublePush	/home/raihan/repos/basical/lib/stack.c	/^LDoublePush(LDoubleStack *this,long double val)$/
+LDoubleSize	/home/raihan/repos/basical/lib/stack.c	/^LDoubleSize(LDoubleStack *this)$/
+LDoubleStack	/home/raihan/repos/basical/lib/stack.h	56
+LDoubleTop	/home/raihan/repos/basical/lib/stack.c	/^LDoubleTop(LDoubleStack *this)$/
+LongCapacity	/home/raihan/repos/basical/lib/stack.c	/^LongCapacity(LongStack *this)$/
+LongCreate	/home/raihan/repos/basical/lib/stack.c	/^LongCreate(LongStack *this, int size)$/
+LongDestroy	/home/raihan/repos/basical/lib/stack.c	/^LongDestroy(LongStack *this)$/
+LongPop	/home/raihan/repos/basical/lib/stack.c	/^LongPop(LongStack *this)$/
+LongPush	/home/raihan/repos/basical/lib/stack.c	/^LongPush(LongStack *this,long long val)$/
+LongSize	/home/raihan/repos/basical/lib/stack.c	/^LongSize(LongStack *this)$/
+LongStack	/home/raihan/repos/basical/lib/stack.h	49
+LongTop	/home/raihan/repos/basical/lib/stack.c	/^LongTop(LongStack *this)$/
+STACK_H	/home/raihan/repos/basical/lib/stack.h	28
+SUCCESS	/home/raihan/repos/basical/lib/error.h	51
+UTILITY_HDR	/home/raihan/repos/basical/lib/utility.h	28
+addition	/home/raihan/repos/basical/lib/utility.c	/^addition(long long arg1, long long arg2)$/
+arr	/home/raihan/repos/basical/lib/stack.h	39
+arr	/home/raihan/repos/basical/lib/stack.h	46
+arr	/home/raihan/repos/basical/lib/stack.h	53
+calculate	/home/raihan/repos/basical/lib/utility.c	/^calculate(LongStack *stack, char operator)$/
+capacity	/home/raihan/repos/basical/lib/stack.h	/^#define capacity(A,b) _Generic((A), CharStack: Cha/
+charSet	/home/raihan/repos/basical/lib/error.h	39
+convert_to_postfix	/home/raihan/repos/basical/lib/utility.c	/^convert_to_postfix(char *buf)$/
+create	/home/raihan/repos/basical/lib/stack.h	/^#define create(A,b) _Generic((A), CharStack: CharC/
+destroy	/home/raihan/repos/basical/lib/stack.h	/^#define destroy(A)  _Generic((A), CharStack: CharD/
+digits	/home/raihan/repos/basical/lib/utility.c	/^digits(long long number)$/
+division	/home/raihan/repos/basical/lib/utility.c	/^division(long long arg1, long long arg2)$/
+errMsg	/home/raihan/repos/basical/lib/error.c	/^errMsg(int errnum)$/
+errorMassage	/home/raihan/repos/basical/lib/error.h	45
+errorType	/home/raihan/repos/basical/lib/error.h	51
+evaluateExpression	/home/raihan/repos/basical/lib/utility.c	/^evaluateExpression(LongStack *stack, char const *b/
+fperror	/home/raihan/repos/basical/lib/error.c	/^fperror(char const *fname,int errnum, bool ext)$/
+func	/home/raihan/repos/basical/lib/error.h	48
+getNum	/home/raihan/repos/basical/lib/utility.c	/^getNum(char const *buf, int pos)$/
+greaterPrecedence	/home/raihan/repos/basical/lib/utility.c	/^greaterPrecedence(char char1, char char2)$/
+isempty	/home/raihan/repos/basical/lib/stack.h	/^#define isempty(A) _Generic((A), CharStack: CharEm/
+localErrno	/home/raihan/repos/basical/lib/error.h	42
+multiply	/home/raihan/repos/basical/lib/utility.c	/^multiply(long long arg1, long long arg2)$/
+pop	/home/raihan/repos/basical/lib/stack.h	/^#define pop(A) _Generic((A), CharStack: CharPop,\\$/
+push	/home/raihan/repos/basical/lib/stack.h	/^#define push(A,b) _Generic((A), CharStack: CharPus/
+reminder	/home/raihan/repos/basical/lib/utility.c	/^reminder(long long arg1, long long arg2)$/
+size	/home/raihan/repos/basical/lib/stack.h	41
+size	/home/raihan/repos/basical/lib/stack.h	48
+size	/home/raihan/repos/basical/lib/stack.h	55
+size	/home/raihan/repos/basical/lib/stack.h	/^#define size(A)  _Generic((A),  CharStack: CharSiz/
+substract	/home/raihan/repos/basical/lib/utility.c	/^substract(long long arg1, long long arg2)$/
+top	/home/raihan/repos/basical/lib/stack.h	40
+top	/home/raihan/repos/basical/lib/stack.h	47
+top	/home/raihan/repos/basical/lib/stack.h	54
+top	/home/raihan/repos/basical/lib/stack.h	/^#define top(A) _Generic((A), CharStack: CharTop,\\$/
+validChar	/home/raihan/repos/basical/lib/utility.c	/^validChar(char inputChar)$/

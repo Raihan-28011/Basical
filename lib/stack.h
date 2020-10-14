@@ -1,3 +1,4 @@
+// License
 /*
  * MIT License
  *
@@ -106,14 +107,6 @@ int LDoubleCapacity(LDoubleStack *This);
 void LDoubleDestroy(LDoubleStack *This);
 
 
-// These macros will reduce the work of writing '&' again and again.
-#define INT 1
-#define LONG 1LL
-#define CHAR "char"
-#define FLOAT (float)(1.0)
-#define DOUBLE (double)(1.0)
-#define LDOUBLE (long double)(1.0)
-
 #define create(A,b) _Generic((A), CharStack: CharCreate,\
                                   CharStack*: CharCreate,\
                                   LongStack: LongCreate,\
@@ -164,6 +157,7 @@ void LDoubleDestroy(LDoubleStack *This);
                                     LongStack*: LongCapacity,\
                                     LDoubleStack: LDoubleCapacity,\
                                     LDoubleStack*: LDoubleCapacity) (&(A))
+
 
 #define isempty(A) _Generic((A), CharStack: CharEmpty,\
                                  LongStack: LongEmpty,\

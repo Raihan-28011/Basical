@@ -1,3 +1,4 @@
+// License
 /*
  * MIT License
  *
@@ -24,14 +25,13 @@
 
 
 #include "utility.h"
-/* #include "error.h" */
 
 extern char charSet[];
 extern char const *errMsg();
 extern char func[];
 extern void fperror();
 
-/*static*/ int
+int
 greaterPrecedence(char char1, char char2)
 {
     if ((char1 == '*' || char1 == '/' || char1 == '%') && (char2 != '*' && char2 != '/' && char2 != '%'))
@@ -43,7 +43,7 @@ greaterPrecedence(char char1, char char2)
         return 0;
 }
 
-/*static*/ bool
+bool
 validChar(char inputChar)
 {
     for (int i=0; i<5; ++i)
@@ -55,7 +55,7 @@ validChar(char inputChar)
 
 
 void
-convert_to_postfix (char *buf)
+convert_to_postfix(char *buf)
 {
     strcpy(func, "convert_to_postfix");
 
