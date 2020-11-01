@@ -60,9 +60,10 @@ errMsg(int errnum)
 
 // same as perror except it can exit the program.
 void
-fperror(char const *fname,int errnum, bool ext)
+fperror(FILE* fd, char const *fname,int errnum, bool ext, char const *file, int line)
 {
-    fprintf(stderr, "%s: %s\n", fname, errMsg(errnum)); 
+    fprintf(fd, "Date: %s\tTime: %s\t\t\t", __DATE__, __TIME__);
+    fprintf(fd, "\nFile: %s\tat line: %d\tin function: %s\terror: %s\n\n", file, line,fname, errMsg(errnum)); 
 
     if (ext)
         exit(-1);

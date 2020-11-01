@@ -29,6 +29,8 @@
 #include <errno.h>
 
 int main(){
+    FILE *fd = fopen(fn, md);
+    fd1 = fd;
     system("clear");
 
     int mode = 0;
@@ -57,29 +59,30 @@ int main(){
             printf("\t--------------------------------------------------\n");
 
             // stack for storing the result value
-            LongStack stack;
-            create(stack,5);
+            Stack stack;
+            stack_create(stack, 5, LLNG);
 
             // this will evaluate the expression we stored into buf
             evaluateExpression(&stack, buf);
 
             // printing the result
-            printf("\t%-48lld\n",top(stack));
+            printf("\t%-48lld\n", stack_top(stack, LLNG));
 
             printf("\t--------------------------------------------------\n");
 
             // freeing memory
-            destroy(stack);
+            stack_destroy(stack);
 
             // if user wants to keep on using the calculator or not
             printf("\tcontinue? [Y/n] ");
             scanf("%c",&option);
             getchar(); // this will eat the newline entered by user, otherwise our main code will take it as input
         } 
-        system("clear");
+        /* system("clear"); */
     } else if (mode == 2) {
         printf("\tWork is going on\n");
     } else {
         printf("Work is going on\n");
     }
+    fclose(fd);
 }

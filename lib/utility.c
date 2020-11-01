@@ -59,8 +59,8 @@ convert_to_postfix(char *buf)
 {
     strcpy(func, "convert_to_postfix");
 
-    CharStack operators;
-    create(operators, 10);
+    Stack operators;
+    stack_create(operators, 10, char);
     
     char controlChar = ' ';
     long long number = 0;
@@ -72,42 +72,46 @@ convert_to_postfix(char *buf)
         else if (isdigit(controlChar)) {
             ungetc(controlChar, stdin);
             scanf("%lld", &number);
+
             charCount += sprintf(buf+charCount, "%lld ", number);
         } else {
            if (validChar(controlChar)) {
-                if (!isempty(operators)) {
-                    char check = top(operators);
+                if (!stack_empty(operators)) {
+                    char check = stack_top(operators, char);
                     int val = greaterPrecedence(check,controlChar);
 
                     if (val == 1) {
-                        while (!isempty(operators)) {
-                            check = top(operators);
+                        while (!stack_empty(operators)) {
+                            check = stack_top(operators, char);
                             charCount += sprintf(buf+charCount, "%c ", check);
-                            pop(operators);
+            
+                            stack_pop(operators);
                         }
-                        push(operators, controlChar);
+            
+                        stack_push(operators, controlChar, char);
                     } else if (val == 2) {
                         charCount += sprintf(buf+charCount, "%c ", check);
-                        pop(operators);
-                        push(operators, controlChar);
+            
+                        stack_pop(operators);
+                        stack_push(operators, controlChar, char);
                     } else
-                        push(operators, controlChar);
+                        stack_push(operators, controlChar, char);
                 } else
-                    push(operators, controlChar);
+                    stack_push(operators, controlChar, char);
            } else {
-                destroy(operators);
-                fperror(func, 1, true);
+                /* stack_destroy(operators); */
+                fperror(fd1, func, 1, false, __FILE__, __LINE__);
            }
         }
     }
 
-    while (!isempty(operators)) {
-        controlChar = top(operators);
+    while (!stack_empty(operators)) {
+        controlChar = stack_top(operators, char);
         charCount += sprintf(buf+charCount, "%c ", controlChar);
-        pop(operators);
+        stack_pop(operators);
     }
 
-    destroy(operators);
+    stack_destroy(operators);
 }
 
 long long
@@ -125,10 +129,11 @@ digits(long long number)
     strcpy(func, "digits");
     
     if (!number)
-        fperror(func, 3, true);
+        fperror(fd1, func, 3, false, __FILE__, __LINE__);
     
-    int counter = 0;
+    int counter = 1;
 
+    number /= 10;
     while (number) {
         number /= 10;
         ++counter;
@@ -169,13 +174,27 @@ reminder(long long arg1, long long arg2)
 }
 
 void
-calculate(LongStack *stack, char operator)
+calculate(Stack *stack, char operator)
 {
-    long long arg2 = LongTop(stack);
-    pop(*stack);
+    strcpy(func, "calculate");
 
-    long long arg1 = LongTop(stack);
-    pop(*stack);
+    long long arg2 = 0;
+    if (!stack_empty(*stack)) {
+        arg2 = stack_top(*stack, LLNG);
+        stack_pop(*stack);
+    } else {
+        fprintf(fd1, "Error occured. Result may be undefined.\n");
+        fperror(fd1, func, 3, false, __FILE__, __LINE__);
+    }
+
+    long long arg1 = 0;
+    if (!stack_empty(*stack)) {
+        arg1 = stack_top(*stack, LLNG);
+        stack_pop(*stack);
+    } else {
+        fprintf(fd1, "Error occured. Result may be undefined.\n");
+        fperror(fd1, func, 5, false, __FILE__, __LINE__);
+    }
 
     long long result = 0;
 
@@ -190,21 +209,25 @@ calculate(LongStack *stack, char operator)
         result = multiply(arg1, arg2);
         break;
     case '/':
+        fprintf(fd1, "Date: %s\t\t\tTime: %s", __DATE__, __TIME__);
+        fprintf(fd1, "\nFile: %s\tat line: %d\tin function: calculate\terror: Using division operator. \
+Result will be truncated to whole number\n\n", __FILE__, __LINE__);
         result = division(arg1, arg2);
         break;
     case '%':
         result = reminder(arg1, arg2);
         break;
     default:
-        ; // null statement
+        fperror(fd1, func, 1, false, __FILE__, __LINE__); 
+        break;
     }
 
-    push(*stack, result);
+    stack_push(*stack, result, LLNG);
 }
 
 
 void
-evaluateExpression(LongStack *stack, char const *buf)
+evaluateExpression(Stack *stack, char const *buf)
 {
     char controlChar = ' ';
     long long number = 0;
@@ -220,7 +243,7 @@ evaluateExpression(LongStack *stack, char const *buf)
             sscanf(buf+position, "%lld", &number);
             
             position += digits(number);
-            push(*stack, number);
+            stack_push(*stack, number, LLNG);
         } else {
             calculate(stack, controlChar);
             ++position;

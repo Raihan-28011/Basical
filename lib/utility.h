@@ -31,7 +31,10 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
-#include "stack.h"
+#include <stdbool.h>
+#include "stackimp.h"
+
+FILE *fd1;
 
 bool validChar(char inputChar);
 
@@ -53,8 +56,8 @@ long long division(long long arg1, long long arg2);
 
 long long reminder(long long arg1, long long arg2);
 
-void calculate(LongStack *stack, char opr);
+void calculate(Stack *stack, char opr);
 
-void evaluateExpression(LongStack *stack, char const *buf);
+void evaluateExpression(Stack *stack, char const *buf);
 
 #endif

@@ -29,9 +29,9 @@ LIB_PATH = lib
 BIN_PATH = bin
 OBJ_PATH = obj
 
-STACK_SRC = $(LIB_PATH)/stack.c
-STACK_OBJ = $(OBJ_PATH)/stack.o
-STACK_HDR= $(LIB_PATH)/stack.h
+# STACK_SRC = $(LIB_PATH)/stack.c
+# STACK_OBJ = $(OBJ_PATH)/stack.o
+# STACK_HDR= $(LIB_PATH)/stack.h
 
 UTILITY_SRC = $(LIB_PATH)/utility.c
 UTILITY_OBJ = $(OBJ_PATH)/utility.o
@@ -44,16 +44,16 @@ ERROR_HDR = $(LIB_PATH)/error.h
 SRC_FILE = basical
 TARGET = $(BIN_PATH)/$(SRC_FILE)
 
-OBJS = $(STACK_OBJ) $(UTILITY_OBJ) $(ERROR_OBJ)
+OBJS = $(UTILITY_OBJ) $(ERROR_OBJ)
 BINS = $(TARGET)
 
-sample: $(STACK_OBJ) $(UTILITY_OBJ) # $(STACK_HDR) $(UTILITY_HDR) 
+basical: $(UTILITY_OBJ) # $(STACK_HDR) $(UTILITY_HDR) 
 	# @cd /home/raihan/repos/calc/bin
 	$(CC) $(CFLAGS)\
-		-o $(TARGET) $(STACK_OBJ) $(UTILITY_OBJ) $(ERROR_OBJ) $(SRC_PATH)/$(SRC_FILE).c
+		-o $(TARGET) $(UTILITY_OBJ) $(ERROR_OBJ) $(SRC_PATH)/$(SRC_FILE).c
 
-$(STACK_OBJ): $(ERROR_OBJ)
-	$(CC) $(CFLAGS) -c -o $(STACK_OBJ) $(STACK_SRC)
+# $(STACK_OBJ): $(ERROR_OBJ)
+# 	$(CC) $(CFLAGS) -c -o $(STACK_OBJ) $(STACK_SRC)
 
 $(UTILITY_OBJ): $(ERROR_OBJ)
 	$(CC) $(CFLAGS) -c -o $(UTILITY_OBJ) $(UTILITY_SRC)

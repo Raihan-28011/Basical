@@ -33,7 +33,7 @@
 #include <stdlib.h>
 
 // local perror
-void fperror(char const *fname, int errnum, bool ext);
+void fperror(FILE* fd, char const *fname, int errnum, bool ext, char const *file, int line);
 
 // valid character set
 char charSet[5] = { '+', '-', '/', '*', '%' };
