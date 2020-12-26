@@ -49,7 +49,7 @@ int main(){
     if (mode == 1) {
         char option = 'y';
         while ( option == 'y' || option == 'Y' ){
-            printf("\n\t-> ");
+            printf("\n\t> ");
             char buf[100];
 
             // this will convert input into a postfix form using stack.
@@ -82,7 +82,7 @@ int main(){
     } else if (mode == 2) {
         printf("\tWork is going on\n");
     } else {
-        printf("Work is going on\n");
+        printf("\tWork is going on\n");
     }
     fclose(fd);
 }

@@ -34,13 +34,17 @@ extern void fperror();
 int
 greaterPrecedence(char char1, char char2)
 {
-    if ((char1 == '*' || char1 == '/' || char1 == '%') && (char2 != '*' && char2 != '/' && char2 != '%'))
+    if ((char1 == '*' || char1 == '/' || char1 == '%') && 
+        (char2 != '*' && char2 != '/' && char2 != '%')) {
         return 1;
-    else if (((char1 == '*' || char1 == '/' || char1 == '%') && (char2 == '*' || char2 == '/' || char2 == '%')) ||\
-             ((char1 == '+' || char1 == '-' ) && (char2 == '+' || char2 == '-')))
+    } else if (((char1 == '*' || char1 == '/' || char1 == '%')  && 
+                (char2 == '*' || char2 == '/' || char2 == '%')) ||
+               ((char1 == '+' || char1 == '-' ) && 
+                (char2 == '+' || char2 == '-' ))) {
         return 2;
-    else
-        return 0;
+    }
+
+    return 0;
 }
 
 bool
@@ -67,9 +71,9 @@ convert_to_postfix(char *buf)
     int charCount = 0;
 
     while ((controlChar = getchar()) != '\n') {
-        if (isspace(controlChar))
+        if (isspace(controlChar)) {
            continue;
-        else if (isdigit(controlChar)) {
+        } else if (isdigit(controlChar)) {
             ungetc(controlChar, stdin);
             scanf("%lld", &number);
 
@@ -99,7 +103,6 @@ convert_to_postfix(char *buf)
                 } else
                     stack_push(operators, controlChar, char);
            } else {
-                /* stack_destroy(operators); */
                 fperror(fd1, func, 1, false, __FILE__, __LINE__);
            }
         }
