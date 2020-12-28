@@ -24,45 +24,29 @@
 CC=clang-10
 CFLAGS=-std=c2x -Wall -Wextra -pedantic
 
-SRC_PATH = src
-LIB_PATH = lib
-BIN_PATH = bin
-OBJ_PATH = obj
+STK_SRC=include/Stack.c
+UTL_SRC=include/utility.c
 
-# STACK_SRC = $(LIB_PATH)/stack.c
-# STACK_OBJ = $(OBJ_PATH)/stack.o
-# STACK_HDR= $(LIB_PATH)/stack.h
+STK_OBJ=obj/Stack.o
+UTL_OBJ=obj/utility.o
 
-UTILITY_SRC = $(LIB_PATH)/utility.c
-UTILITY_OBJ = $(OBJ_PATH)/utility.o
-UTILITY_HDR = $(LIB_PATH)/utility.h
+TEMP_OBJ1=obj/tempObj1.o
+TEMP_OBJ2=obj/tempObj2.o
 
-ERROR_SRC = $(LIB_PATH)/error.c
-ERROR_OBJ = $(OBJ_PATH)/error.o
-ERROR_HDR = $(LIB_PATH)/error.h
+BASCL_OBJ=obj/basical.o
 
-SRC_FILE = basical
-TARGET = $(BIN_PATH)/$(SRC_FILE)
+basical: $(UTL_OBJ) $(STK_OBJ)
+	$(CC) $(CFLAGS) -c src/basical.c -o $(BASCL_OBJ)
+	$(CC) $(CFLAGS) $(STK_OBJ) $(UTL_OBJ) $(BASCL_OBJ) -o bin/basical
 
-OBJS = $(UTILITY_OBJ) $(ERROR_OBJ)
-BINS = $(TARGET)
+$(STK_OBJ): $(STK_SRC)
+	$(CC) $(CFLAGS) -c $(STK_SRC) -o $(STK_OBJ)
 
-basical: $(UTILITY_OBJ) # $(STACK_HDR) $(UTILITY_HDR) 
-	# @cd /home/raihan/repos/calc/bin
-	$(CC) $(CFLAGS)\
-		-o $(TARGET) $(UTILITY_OBJ) $(ERROR_OBJ) $(SRC_PATH)/$(SRC_FILE).c
-
-# $(STACK_OBJ): $(ERROR_OBJ)
-# 	$(CC) $(CFLAGS) -c -o $(STACK_OBJ) $(STACK_SRC)
-
-$(UTILITY_OBJ): $(ERROR_OBJ)
-	$(CC) $(CFLAGS) -c -o $(UTILITY_OBJ) $(UTILITY_SRC)
-
-$(ERROR_OBJ): $(ERROR_HDR)
-	$(CC) $(CFLAGS) -c -o $(ERROR_OBJ) $(ERROR_SRC)
+$(UTL_OBJ): $(UTL_SRC)
+	$(CC) $(CFLAGS) -c $(UTL_SRC) -o $(UTL_OBJ)
 
 run:
-	./$(TARGET)
+	bin/basical
 
 clean:
-	rm $(OBJS) $(BINS)
+	rm bin/basical obj/*

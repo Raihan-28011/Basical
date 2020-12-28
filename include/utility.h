@@ -32,32 +32,20 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include "stackimp.h"
-
-FILE *fd1;
+#include "Stack.h"
 
 bool validChar(char inputChar);
-
 int greaterPrecedence(char char1, char char2);
-
+int number(char *, int const);
+int Operators(char *buf, Stack **, char const, int const);
 void convert_to_postfix(char *buf);
-
-long long getNum(char const *buf, int pos);
-
-int digits(long long number);
-
-long long multiply(long long arg1, long long arg2);
-
-long long addition(long long arg1, long long arg2);
-
-long long substract(long long arg1, long long arg2);
-
-long long division(long long arg1, long long arg2);
-
-long long reminder(long long arg1, long long arg2);
-
+Data getNum(char const *buf, int pos);
+Data multiply(Data arg1, Data arg2);
+Data addition(Data arg1, Data arg2);
+Data substract(Data arg1, Data arg2);
+Data division(Data arg1, Data arg2);
+Data reminder(Data arg1, Data arg2);
 void calculate(Stack *stack, char opr);
-
-void evaluateExpression(Stack *stack, char const *buf);
+void evaluateExpression(char const *buf);
 
 #endif

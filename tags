@@ -1,0 +1,46 @@
+CHAR	include/Stack.h	14
+Data	include/Stack.h	8
+Data	include/Stack.h	12
+FLOAT	include/Stack.h	14
+LONG	include/Stack.h	14
+NumDigits	include/utility.c	36
+Operators	include/utility.c	/^int Operators(char *buf, Stack **st, char const c,/
+STACKIMP_H	include/Stack.h	2
+Stack	include/Stack.h	16
+Stack	include/Stack.h	19
+Tag	include/Stack.h	14
+UTILITY_HDR	include/utility.h	28
+addition	include/utility.c	/^Data addition(Data arg1, Data arg2) {$/
+charSet	include/utility.c	33
+convert_to_postfix	include/utility.c	/^void convert_to_postfix(char *buf) {$/
+data	include/Stack.h	17
+data_c	include/Stack.h	9
+data_d	include/Stack.h	11
+data_l	include/Stack.h	10
+digitCount	include/Stack.h	23
+division	include/utility.c	/^Data division(Data arg1, Data arg2) {$/
+doubleNums	include/utility.c	34
+evaluateExpression	include/utility.c	/^void evaluateExpression(char const *buf) {$/
+greaterPrecedence	include/utility.c	/^int greaterPrecedence(char char1, char char2) {$/
+max	include/utility.c	/^static int max(int a, int b) {$/
+multiply	include/utility.c	/^Data multiply(Data arg1, Data arg2) {$/
+next	include/Stack.h	18
+next	include/Stack.h	24
+numDigits	include/Stack.h	22
+numDigits	include/Stack.h	25
+numDigits_create	include/Stack.c	/^numDigits *numDigits_create(void) {$/
+numDigits_destruct	include/Stack.c	/^void numDigits_destruct(numDigits **nd) {$/
+numDigits_pop	include/Stack.c	/^int numDigits_pop(numDigits **nd) {$/
+numDigits_push	include/Stack.c	/^void numDigits_push(numDigits **nd, const int coun/
+numDigits_reverse	include/Stack.c	/^void numDigits_reverse(numDigits **nd) {$/
+number	include/utility.c	/^int number(char *buf, int const count) {$/
+precision	include/utility.c	35
+stack_create	include/Stack.c	/^Stack *stack_create(void) {$/
+stack_destruct	include/Stack.c	/^void stack_destruct(Stack **st) {$/
+stack_empty	include/Stack.c	/^bool stack_empty(Stack *st) {$/
+stack_pop	include/Stack.c	/^Stack stack_pop(Stack **st) {$/
+stack_push	include/Stack.c	/^void stack_push(Stack **st, Data const data) {$/
+stack_top	include/Stack.c	/^Stack stack_top(Stack *st) {$/
+substract	include/utility.c	/^Data substract(Data arg1, Data arg2) {$/
+tag	include/Stack.h	14
+validChar	include/utility.c	/^bool validChar(char inputChar) {$/
