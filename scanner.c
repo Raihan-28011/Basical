@@ -5,6 +5,14 @@
 #include "include/scanner.h"
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
+
+bool floatPresent = false;
+
+void scanner_init(Scanner *scanner, char *source) {
+  scanner->_source = scanner->_start = scanner->_current = source;
+  scanner->_len = strlen(source);
+}
 
 static bool is_end(Scanner *scanner) {
   return scanner->_current - scanner->_source >= scanner->_len;
@@ -21,7 +29,7 @@ static void skip_whitespace(Scanner *scanner) {
     advance(scanner);
 }
 
-char peek(Scanner *scanner, int offset) {
+static char peek(Scanner *scanner, int offset) {
   return *(scanner->_current + offset);
 }
 
@@ -36,6 +44,7 @@ static Token make_token(TokenType type, char *start, size_t len) {
 static Token number_token(Scanner *scanner) {
   while (isdigit(peek(scanner, 0)) && !is_end(scanner))
     advance(scanner);
+
   if (peek(scanner, 0) == '.') {
     floatPresent = true;
     advance(scanner);
@@ -46,24 +55,26 @@ static Token number_token(Scanner *scanner) {
 
 #define len() (scanner->_current - scanner->_start)
   return ((floatPresent) ?
-          make_token(TOKEN_FLOAT_LITERAL, scanner->_current, len())
-          : make_token(TOKEN_INT_LITERAL, scanner->_current, len()));
+          make_token(TOKEN_FLOAT_LITERAL, scanner->_start, len())
+          : make_token(TOKEN_INT_LITERAL, scanner->_start, len()));
 }
 
 Token next_token(Scanner *scanner) {
   if (is_end(scanner))
     return eof_token();
 
-  scanner->_start = scanner->_current;
   skip_whitespace(scanner);
+  scanner->_start = scanner->_current;
 
   char c = advance(scanner);
   switch (c) {
     case '+': return make_token(TOKEN_PLUS, "+", 1);
     case '-': return make_token(TOKEN_MINUS, "-", 1);
     case '*':
-      if (peek(scanner, 0) == *)
+      if (peek(scanner, 0) == '*') {
+        advance(scanner);
         return make_token(TOKEN_POW, "**", 2);
+      }
       return make_token(TOKEN_STAR, "*", 1);
     case '/': return make_token(TOKEN_SLASH, "/", 1);
     case '%': return make_token(TOKEN_MOD, "%", 1);
@@ -72,6 +83,7 @@ Token next_token(Scanner *scanner) {
     default:
       if (isdigit(c))
         return number_token(scanner);
-      make_token(TOKEN_UNRECOGNISED, "", 0);
+      return make_token(TOKEN_UNRECOGNISED, "", 0);
   }
+  return eof_token();
 }

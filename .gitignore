@@ -1,0 +1,5 @@
+/debug-build/
+/compile_commands.json
+/.idea
+/test
+/.cache

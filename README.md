@@ -2,7 +2,11 @@ README
 
 # Info
 
-This is a simple calculator program. This program has been improved and re-writeen. I have used list to implement the stack and now it can also handle floating points. Some corner cases are ignored for now.
+Basical is a very basic calculator with ability to calculate both floats and integers. It can handle `+`, `-`,
+`*`, `/`, `%`, `**`.
+(Note: `**` is a special operator taken from `python`. This is a power operator.)
+
+Whole project has been rewritten. It has been made cmake project.
 
 # Installation
 For installing the code, you can use `git clone`
@@ -11,24 +15,3 @@ For installing the code, you can use `git clone`
     $ git clone github.com/Raihan-28011/Basical.git
 ```
 You can also install the files directly from github.
-
-# How to run?
-
-You can run the calculator, using this command:
-```bash
-    $ cd Basical   # change directory to the project directory
-    $ bin/basical  # run this command
-```
-Or,
-```bash
-    $ cd Basical
-    $ cd bin/
-    $ ./basical
-```
-Or if you want to build the code yourself than you can do something like this,
-```bash
-	$ cd Basical
-	$ make clean
-	$ make basical
-	$ make run
-```
