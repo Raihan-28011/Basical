@@ -43,9 +43,8 @@ void add_error_token(char const *format, ...) {
 }
 
 void clear_errors() {
-  ptrdiff_t ind = 0;
-  while (ind != Index) {
-    free(errors[ind]);
-    ++ind;
+  while (Index) {
+    free(errors[--Index]);
+    errors[Index] = (char*)0;
   }
 }

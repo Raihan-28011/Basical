@@ -40,7 +40,7 @@ static void print_result_d(double result) {
     res[len - 1] = '\0';
     --len;
   }
-  printf("⮩ %s\n", res);
+  printf(GREEN "⮩  " NORMAL "%s\n", res);
 }
 
 static void print_result_l(long long result) {
@@ -49,10 +49,10 @@ static void print_result_l(long long result) {
 
 static void hint() {
   fprintf(stdout, "To use basical, provide an expression and hit enter.\nExample:\n"
-                  BLUE "\t⮩  " NORMAL "(10 ** 2) + 100[ENTER]\n"
-                  GREEN "\t⮩  " NORMAL "10000\n"
-                  BLUE "\t⮩  " NORMAL "10.0 + 5.5 * 5.5[ENTER]\n"
-                  GREEN "\t⮩  " NORMAL "40.35\n");
+                  BLUE "  ⮩  " NORMAL "(10 ** 2) + 100[ENTER]\n"
+                  GREEN "  ⮩  " NORMAL "10000\n"
+                  BLUE "  ⮩  " NORMAL "10.0 + 5.5 * 5.5[ENTER]\n"
+                  GREEN "  ⮩  " NORMAL "40.35\n");
 }
 
 static void help() {
@@ -114,6 +114,7 @@ int main(void) {
       long long result = evaluate_expression_l(tree->_root);
       print_result_l(result);
     }
+    putchar('\n');
     
     if (print_errors()) {
       free_everything(tree);

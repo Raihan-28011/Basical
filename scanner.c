@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <stdlib.h>
 
 bool floatPresent = false;
 
@@ -83,7 +84,9 @@ Token next_token(Scanner *scanner) {
     default:
       if (isdigit(c))
         return number_token(scanner);
-      return make_token(TOKEN_UNRECOGNISED, "", 0);
+      {
+        return make_token(TOKEN_UNRECOGNISED, scanner->_start, scanner->_current - scanner->_start);
+      }
   }
   return eof_token();
 }

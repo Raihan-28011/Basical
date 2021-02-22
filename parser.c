@@ -65,6 +65,7 @@ static Expression *parse_primary(Parser *parser) {
   Token tok;
   if ((tok = cur_token(parser))._type == TOKEN_UNRECOGNISED) {
       add_error_token("unrecognised token '%*s'", tok._len, tok._start);
+      /* free(tok._start); */
   } else if (tok._type == TOKEN_EOF) {
       add_error_token("unexpected 'eof' found");
   } else {
