@@ -10,10 +10,10 @@
 #include <stddef.h>
 
 bool error_occurred = false;
-char *errors[MAX_ERRORS] = { (char*)0, (char*)0, (char*)0, (char*)0, (char*)0,
-                             (char*)0, (char*)0, (char*)0, (char*)0, (char*)0 };
+char *errors[MAX_ERRORS] = { NULL_CHAR, NULL_CHAR, NULL_CHAR, NULL_CHAR, NULL_CHAR,
+                             NULL_CHAR, NULL_CHAR, NULL_CHAR, NULL_CHAR, NULL_CHAR };
 ptrdiff_t Index = 0;
-char *error_ind = (char*)0;
+char *error_ind = NULL_CHAR;
 
 void add_error(char const *message) {
   if (!error_occurred)
@@ -35,7 +35,7 @@ void add_error_token(char const *format, ...) {
 
   va_list list;
   va_start(list, format);
-  vsprintf(error_ind, format, list);
+  vsnprintf(error_ind, len + 30, format, list);
   va_end(list);
 
   errors[Index] = error_ind;
@@ -43,8 +43,10 @@ void add_error_token(char const *format, ...) {
 }
 
 void clear_errors() {
+  error_occurred = false;
+  error_ind = NULL_CHAR;
   while (Index) {
     free(errors[--Index]);
-    errors[Index] = (char*)0;
+    errors[Index] = NULL_CHAR;
   }
 }

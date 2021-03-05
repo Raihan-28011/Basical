@@ -8,6 +8,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#define NULL_CHAR (char*)0
+
 enum { MAX_ERRORS = 10 };
 extern bool error_occurred;
 extern char *errors[MAX_ERRORS];

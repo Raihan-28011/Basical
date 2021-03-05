@@ -10,6 +10,7 @@
 #define GREEN "\x1b[32m"
 #define BLUE "\x1b[34m"
 #define NORMAL "\x1b[0m"
+#define BOLD  "\x1b[1m"
 
 static bool print_errors() {
   if (error_occurred) {
@@ -24,6 +25,7 @@ static bool print_errors() {
 static void free_everything(ExprTree *tree) {
   delete_expression_tree(tree);
   clear_errors();
+  floatPresent = false;
 }
 
 static void prompt() {
@@ -32,39 +34,48 @@ static void prompt() {
 
 static void print_result_d(double result) {
   char res[100];
-  sprintf(res, "%lf", result);
+  snprintf(res, 100, "%lf", result);
   int len = strlen(res);
 
   /* remove trailing zero's */
-  while (res[len - 2] != '.' && res[len-1] == '0') {
+  while (res[len - 2] != '.' && res[len - 1] == '0') {
     res[len - 1] = '\0';
     --len;
   }
-  printf(GREEN "⮩  " NORMAL "%s\n", res);
+  printf(GREEN "⮩  " NORMAL "%s", res);
 }
 
 static void print_result_l(long long result) {
-  printf(GREEN "⮩  " NORMAL "%lld\n", result);
+  printf(BOLD GREEN "=  " NORMAL "%lld", result);
 }
 
 static void hint() {
   fprintf(stdout, "To use basical, provide an expression and hit enter.\nExample:\n"
-                  BLUE "  ⮩  " NORMAL "(10 ** 2) + 100[ENTER]\n"
-                  GREEN "  ⮩  " NORMAL "10000\n"
+                  BLUE "  ⮩  " NORMAL "(10 ** 3) + 100[ENTER]\n"
+                  BOLD GREEN "  =  " NORMAL "1100\n"
                   BLUE "  ⮩  " NORMAL "10.0 + 5.5 * 5.5[ENTER]\n"
-                  GREEN "  ⮩  " NORMAL "40.35\n");
+                  BOLD GREEN "  =  " NORMAL "40.35\n"
+                  "\n[" BOLD RED "NOTE" NORMAL ": If you want result to be in float, you"
+                  " have to explicitly include \na floating point number in your expression]\n");
 }
 
 static void help() {
-  fprintf(stdout, "Type '" GREEN ".hint" NORMAL "' to see some examples\n");
+  /* fprintf(stdout, "Type '" GREEN ".hint" NORMAL "' to see some examples\n"); */
+  fprintf(stdout, "commands:\n"
+                  GREEN "  .help" NORMAL "      shows this message\n"
+                  GREEN "  .hint" NORMAL "      shows how to use basical with examples\n"
+                  GREEN "  .exit" NORMAL "      exits from basical\n");
 }
 
 static bool handle_commands(char const *expression) {
   if (expression[0] == '.') {
-    if (strncmp(expression, ".hint", 5) == 0) {
+    if (strncmp(expression + 1, "hint", 4) == 0) {
       hint();
-    } else if (strncmp(expression, ".help", 5) == 0) {
+    } else if (strncmp(expression + 1, "help", 4) == 0) {
       help();
+    } else if (strncmp(expression + 1, "exit", 4) == 0) {
+        printf("exiting...\n");
+        exit(EXIT_SUCCESS);
     } else {
       fprintf(stderr, RED "error" NORMAL ": unrecognised command '" GREEN "%s" NORMAL "'\n", expression);
     }
@@ -95,7 +106,8 @@ int main(void) {
       continue;
     }
     
-    expression[strlen(expression) - 1] = '\0';
+    if (expression[strlen(expression) - 1] == '\n')
+        expression[strlen(expression) - 1] = '\0';
     if (handle_commands(expression))
       continue;
 
