@@ -84,9 +84,7 @@ Token next_token(Scanner *scanner) {
     default:
       if (isdigit(c))
         return number_token(scanner);
-      {
-        return make_token(TOKEN_UNRECOGNISED, scanner->_start, scanner->_current - scanner->_start);
-      }
+      return make_token(TOKEN_UNRECOGNISED, scanner->_start, scanner->_current - scanner->_start);
   }
   return eof_token();
 }

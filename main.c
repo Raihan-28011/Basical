@@ -16,7 +16,7 @@ static bool print_errors() {
   if (error_occurred) {
     ptrdiff_t ind = 0;
     while (ind != Index)
-      fprintf(stderr, RED "error: " NORMAL "%s\n", errors[ind++]);
+      fprintf(stderr, BOLD RED "error: " NORMAL "%s\n", errors[ind++]);
     return true;
   }
   return false;
@@ -29,7 +29,7 @@ static void free_everything(ExprTree *tree) {
 }
 
 static void prompt() {
-  printf(BLUE "⮩  " NORMAL);
+  printf(BOLD BLUE "⮩  " NORMAL);
 }
 
 static void print_result_d(double result) {
@@ -42,7 +42,7 @@ static void print_result_d(double result) {
     res[len - 1] = '\0';
     --len;
   }
-  printf(GREEN "⮩  " NORMAL "%s", res);
+  printf(GREEN "=  " NORMAL "%s", res);
 }
 
 static void print_result_l(long long result) {

@@ -35,7 +35,13 @@ bool check_token(Parser *parser, int tokNum, ...) {
       return ret;
   
     TokenType tok = va_arg(list, TokenType);
-    ret = (ret || (peek_token(parser)._type == tok));
+    TokenType tok1 = peek_token(parser)._type;
+    if (tok1 == TOKEN_UNRECOGNISED) {
+      add_error_token("unrecognised token '%.*s'", peek_token(parser)._len, cur_token(parser)._start);
+      va_end(list);
+      return false;
+    }
+    ret = (ret || (tok1 == tok));
   }
   
   va_end(list);
@@ -56,7 +62,7 @@ static Expression *parse_primary(Parser *parser) {
     if (check_token(parser, 1, TOKEN_RIGHT_PAREN))
       cur_token(parser);
     else {
-      add_error_token("expected ')', found '%*s'", peek_token(parser)._len, cur_token(parser)._start);
+      add_error_token("expected ')', found '%.*s'", peek_token(parser)._len, cur_token(parser)._start);
       return NULL_EXPR_PTR;
     }
     return make_grouped_expression(left);
@@ -64,12 +70,12 @@ static Expression *parse_primary(Parser *parser) {
   
   Token tok;
   if ((tok = cur_token(parser))._type == TOKEN_UNRECOGNISED) {
-      add_error_token("unrecognised token at the start of '%*s'", tok._len, tok._start);
+      add_error_token("unrecognised token '%.*s'", tok._len, tok._start);
       /* free(tok._start); */
   } else if (tok._type == TOKEN_EOF) {
       add_error_token("unexpected 'eof' found");
   } else {
-    add_error_token("expected expression, found '%*s'", tok._len, tok._start);
+    add_error_token("expected expression, found '%.*s'", tok._len, tok._start);
   }
   return NULL_EXPR_PTR;
 }
