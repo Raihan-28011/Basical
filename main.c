@@ -74,7 +74,6 @@ static bool handle_commands(char const *expression) {
     } else if (strncmp(expression + 1, "help", 4) == 0) {
       help();
     } else if (strncmp(expression + 1, "exit", 4) == 0) {
-        printf("exiting...\n");
         exit(EXIT_SUCCESS);
     } else {
       fprintf(stderr, RED "error" NORMAL ": unrecognised command '" GREEN "%s" NORMAL "'\n", expression);
