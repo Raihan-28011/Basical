@@ -1,0 +1,37 @@
+/*
+ * created by: shunnobir
+ * date: 30/11/2023
+ */
+
+#ifndef __BASICAL_TOKEN_H__
+#define __BASICAL_TOKEN_H__
+
+#include "common.h"
+#include <stdio.h>
+
+typedef enum tokentype {
+  /* Operators */
+  t_plus, t_minus, t_star, t_slash,
+  t_mod, t_pow, 
+
+  /* Delimeters */
+  t_lparen, t_rparen,
+
+ /* Literals */
+  t_iliteral, t_fliteral,
+
+  /* Special tokens */
+  t_newline, t_eof, t_unrecognised
+} tokentype_t;
+
+typedef struct token token_t;
+struct token {
+    tokentype_t type;    // Token type
+    char const  *token;  // Token string
+    i16_t       len;     // Length of the token
+    i16_t       ln, col; // Line and column of the token
+};
+
+void token_print(token_t *token);
+
+#endif // __BASICAL_TOKEN_H__
