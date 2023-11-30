@@ -18,6 +18,7 @@ struct lexer {
     i16_t      cap;        // Token Capacity
     i16_t      line;       // Line no.
     char       *src;       // Source string
+    i16_t      pos;        // Current position in src
 };
 
 lexer_t *lexer_new(void);

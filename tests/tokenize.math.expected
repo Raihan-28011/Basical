@@ -1,0 +1,4 @@
+( 2 t_plus 3 ) t_pow 3.4 t_slash 8 t_mod ( 2 t_pow 3 ) 
+3239 t_plus 32.343 t_pow ( 323 t_pow 6565.5656 ) t_mod 439894 t_slash 98383 
+sqrt ( 44.434 ) t_plus 4393 
+ t_eof

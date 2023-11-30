@@ -29,118 +29,135 @@ static char *lexer_read_file(char const *fname) {
     return content;
 }
 
-static bool lexer_iseof(char c) {
+inline static bool lexer_iseof(char c) {
     return c == '\0';
 }
 
-static bool lexer_isdelim(char c) {
-    return isspace(c) || c == '\0' || c == '(' || c == ')'; 
+inline static bool lexer_isdelim(char c) {
+    return isspace(c) || c == '\0' || c == '\n' || c == '(' || c == ')'; 
 }
 
-static void lexer_resize(lexer_t *lexer) {
+inline static char lexer_nextc(lexer_t *lexer) {
+    return lexer->src[lexer->pos++];
+}
+
+inline static char lexer_peekc(lexer_t *lexer) {
+    return lexer->src[lexer->pos];
+}
+
+inline static token_t lexer_make_token(lexer_t *lexer, tokentype_t type, i16_t start, i16_t len) {
+    return (token_t){ type, lexer->src + start, len, lexer->line, start+1 };
+}
+
+inline static void lexer_resize(lexer_t *lexer) {
     if (lexer->size + 1 >= lexer->cap) {
         lexer->cap    = lexer->cap * LEXER_GROW_FACTOR;
         lexer->tokens = (token_t*)realloc(lexer->tokens, sizeof(token_t) * lexer->cap);
     }
 }
 
-static void lexer_push(lexer_t *lexer, token_t token) {
+inline static void lexer_push(lexer_t *lexer, token_t token) {
     lexer_resize(lexer);
     lexer->tokens[lexer->size++] = token;
 }
 
-static void lexer_skipws(lexer_t *lexer, char const *src, size_t *pos) {
-    char c = src[*pos];
+static void lexer_skipws(lexer_t *lexer) {
+    i16_t start = lexer->pos;
+    char c      = lexer_peekc(lexer);
     while (!lexer_iseof(c) && isspace(c)) {
         if (c == '\n') {
-            lexer_push(lexer, (token_t){ t_newline, "\n", 1, lexer->line, (i16_t)(*pos+1) });
+            lexer_push(lexer, lexer_make_token(lexer, t_newline, start, 1));
             ++lexer->line;
         }
-        ++(*pos);
-        c = src[*pos];
+        lexer_nextc(lexer);
+        c = lexer_peekc(lexer);
     }
 }
 
-static char lexer_peek(char const *src, size_t *pos) {
-    return src[(*pos)+1];
+inline static void lexer_readnum(lexer_t *lexer) {
+    char c = lexer_peekc(lexer);
+    while (!lexer_iseof(c) && isdigit(c)) { 
+        lexer_nextc(lexer);
+        c = lexer_peekc(lexer); 
+    }    
 }
 
-static void lexer_push_number(lexer_t *lexer, char const *src, size_t *pos) {
+static void lexer_push_number(lexer_t *lexer) {
     tokentype_t type = t_iliteral;
-    size_t start = *pos;
-    char c = src[*pos];
-    while (!lexer_iseof(c) && isdigit(c)) {
-        ++(*pos);
-        c = src[*pos];
-    }
+    size_t start = lexer->pos;
+    
+    lexer_readnum(lexer);
+    char c = lexer_peekc(lexer);
     if (c == '.') {
-        ++(*pos);
-        while (!lexer_iseof(c) && isdigit(c)) {
-            ++(*pos);
-            c = src[*pos];
-        }
+        lexer_nextc(lexer);
+        lexer_readnum(lexer);
         type = t_fliteral;
     }
 
-    lexer_push(lexer, (token_t){ type, src + start, *pos - start, lexer->line, start });
-    --(*pos);
+    lexer_push(lexer, lexer_make_token(lexer, type, start, lexer->pos - start));
 }
 
-static void lexer_push_unrecognized(lexer_t *lexer, char const *src, size_t *pos) {
-    size_t start = *pos;
-    char c = src[*pos];
-    while (!lexer_iseof(c) && !lexer_isdelim(c)) {
-        ++(*pos);
-        c = src[*pos];
+static void lexer_push_unrecognized(lexer_t *lexer) {
+    size_t start = lexer->pos;
+    char c = lexer_peekc(lexer);
+    while (!lexer_iseof(c) && !lexer_isdelim(c)) { 
+        lexer_nextc(lexer);
+        c = lexer_peekc(lexer); 
     }
-    lexer_push(lexer, (token_t){ t_unrecognised, src + start, *pos - start, lexer->line, start });
-    --(*pos);
+    lexer_push(lexer, lexer_make_token(lexer, t_unrecognised, start, lexer->pos - start));
 }
 
 void lexer_tokenize_file(lexer_t *lexer, const char *fname) {
     char   *src = lexer_read_file(fname);
     lexer->src  = src;
-    size_t pos  = 0;
+    lexer->pos  = 0;
 
-    char cur    = src[pos];
+    char cur    = lexer_peekc(lexer);
     while (!lexer_iseof(cur)) {
-        lexer_skipws(lexer, src, &pos);
-        cur     = src[pos];
+        lexer_skipws(lexer);
+        cur = lexer_peekc(lexer);
         switch (cur) {
         case '+':
-            lexer_push(lexer, (token_t){ t_plus, src + pos, 1, lexer->line, (i16_t)(pos+1) });
+            lexer_push(lexer, lexer_make_token(lexer, t_plus, lexer->pos, 1));
+            lexer_nextc(lexer);
             break;
         case '-':
-            lexer_push(lexer, (token_t){ t_minus, src + pos, 1, lexer->line, (i16_t)(pos+1) });
+            lexer_push(lexer, lexer_make_token(lexer, t_minus, lexer->pos, 1));
+            lexer_nextc(lexer);
             break;
         case '/':
-            lexer_push(lexer, (token_t){ t_slash, src + pos, 1, lexer->line, (i16_t)(pos+1) });
+            lexer_push(lexer, lexer_make_token(lexer, t_slash, lexer->pos, 1));
+            lexer_nextc(lexer);
             break;
         case '*':
-            if (lexer_peek(src, &pos) == '*') {
-                lexer_push(lexer, (token_t){ t_pow, src + pos, 2, lexer->line, (i16_t)(pos+1) });
-                ++pos;
-            } else
-                lexer_push(lexer, (token_t){ t_star, src + pos, 1, lexer->line, (i16_t)(pos+1) });
+            if (lexer_peekc(lexer) == '*') {
+                lexer_push(lexer, lexer_make_token(lexer, t_pow, lexer->pos, 1));
+                lexer_nextc(lexer);
+            } else {
+                lexer_push(lexer, lexer_make_token(lexer, t_star, lexer->pos, 1));
+            }
+            lexer_nextc(lexer);
             break;
         case '%':
-            lexer_push(lexer, (token_t){ t_mod, src + pos, 1, lexer->line, (i16_t)(pos+1) });
+            lexer_push(lexer, lexer_make_token(lexer, t_mod, lexer->pos, 1));
+            lexer_nextc(lexer);
             break;
         case '(':
-            lexer_push(lexer, (token_t){ t_lparen, src + pos, 1, lexer->line, (i16_t)(pos+1) });
+            lexer_push(lexer, lexer_make_token(lexer, t_lparen, lexer->pos, 1));
+            lexer_nextc(lexer);
             break;
         case ')':
-            lexer_push(lexer, (token_t){ t_rparen, src + pos, 1, lexer->line, (i16_t)(pos+1) });
+            lexer_push(lexer, lexer_make_token(lexer, t_rparen, lexer->pos, 1));
+            lexer_nextc(lexer);
             break;
         default:
-            if (isdigit(cur)) lexer_push_number(lexer, src, &pos);
-            else lexer_push_unrecognized(lexer, src, &pos);
+            if (isdigit(cur)) lexer_push_number(lexer);
+            else lexer_push_unrecognized(lexer);
             break;
         }
-        ++pos;
-        cur = src[pos];
+        cur = lexer_peekc(lexer);
     }
-    lexer_push(lexer, (token_t){ t_eof, src + pos, 1, lexer->line, (i16_t)(pos+1) });
+    lexer_push(lexer, lexer_make_token(lexer, t_eof, lexer->pos, 0));
 }
 
 lexer_t *lexer_new(void) {
@@ -149,6 +166,8 @@ lexer_t *lexer_new(void) {
     _n->cap     = 1;
     _n->tokens  = NULL;
     _n->line    = 1;
+    _n->src     = NULL;
+    _n->pos     = 0;
     return _n;
 }
 
