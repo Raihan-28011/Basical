@@ -13,7 +13,7 @@
 #include <stdbool.h>
 
 static char *lexer_read_file(char const *fname) {
-    FILE *fd = fopen(fname, "r");
+    FILE *fd = fopen(fname, "rb");
     if (!fd) error("could not open file: %s", fname);
     
     if (fseek(fd, 0, SEEK_END) == -1) error("could not read file: %s", fname);
@@ -21,7 +21,7 @@ static char *lexer_read_file(char const *fname) {
     i64_t fsize = ftell(fd);
     fseek(fd, 0, SEEK_SET);
 
-    char *content = (char*)malloc(sizeof(char) * fsize);
+    char *content = (char*)malloc(sizeof(char) * (fsize+1));
     if ((i64_t)fread(content, sizeof(char), fsize, fd) != fsize) 
         error("could not read file: %s", fname);
     content[fsize] = '\0';
