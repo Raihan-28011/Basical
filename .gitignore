@@ -1,5 +1,6 @@
-/debug-build/
-/compile_commands.json
-/.idea
-/test
-/.cache
+debug-build
+compile_commands.json
+.idea
+.cache
+.vscode
+Session.vim
