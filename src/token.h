@@ -27,7 +27,7 @@ typedef enum tokentype {
 typedef struct token token_t;
 struct token {
     tokentype_t type;    // Token type
-    char const  *token;  // Token string
+    char        *token;  // Token string
     i16_t       len;     // Length of the token
     i16_t       ln, col; // Line and column of the token
 };

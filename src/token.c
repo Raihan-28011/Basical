@@ -5,42 +5,15 @@
 
 #include "token.h"
 
+char const *token_to_str[] = {
+  "t_plus", "t_minus", "t_star", "t_slash",
+  "t_mod", "t_pow", 
+  "t_lparen", "t_rparen",
+  "t_iliteral", "t_fliteral", 
+  "t_newline", "t_eof", "t_unrecognised"
+};
+
 void token_print(token_t *token) {
-    switch (token->type) {
-    case t_plus:
-        printf("%s ", "t_plus");
-        break;
-    case t_minus:
-        printf("%s ", "t_minus");
-        break;
-    case t_star:
-        printf("%s ", "t_star");
-        break;
-    case t_slash:
-        printf("%s ", "t_slash");
-        break;
-    case t_mod:
-        printf("%s ", "t_mod");
-        break;
-    case t_pow:
-        printf("%s ", "t_pow");
-        break;
-    case t_lparen:
-    case t_rparen:
-    case t_iliteral:
-    case t_fliteral:
-        printf("%.*s ", token->len, token->token);
-        break;
-    case t_newline:
-        printf("\n");
-        break;
-    case t_eof:
-        printf("t_eof\n");
-        break;
-    case t_unrecognised:
-        printf("%.*s ", token->len, token->token);
-        break;
-    default:
-        break;
-    }
+    printf("%s ", token_to_str[token->type]);
+    if (token->type == t_newline || token->type == t_eof) printf("\n");
 }

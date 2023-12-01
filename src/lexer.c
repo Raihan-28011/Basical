@@ -7,10 +7,11 @@
 #include "error.h"
 #include "lexer.h"
 #include "token.h"
-#include <stdio.h>
-#include <stdlib.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 static char *lexer_read_file(char const *fname) {
     FILE *fd = fopen(fname, "rb");
@@ -23,7 +24,7 @@ static char *lexer_read_file(char const *fname) {
 
     char *content = (char*)malloc(sizeof(char) * (fsize+1));
     if ((i64_t)fread(content, sizeof(char), fsize, fd) != fsize) 
-        error("could not read file: %s", fname);
+        error("could not read whole file: %s", fname);
     content[fsize] = '\0';
     fclose(fd);
     return content;
@@ -41,12 +42,22 @@ inline static char lexer_nextc(lexer_t *lexer) {
     return lexer->src[lexer->pos++];
 }
 
-inline static char lexer_peekc(lexer_t *lexer) {
-    return lexer->src[lexer->pos];
+inline static char lexer_peekc(lexer_t *lexer, i32_t offset) {
+    return lexer->src[lexer->pos + offset];
 }
 
 inline static token_t lexer_make_token(lexer_t *lexer, tokentype_t type, i16_t start, i16_t len) {
-    return (token_t){ type, lexer->src + start, len, lexer->line, start+1 };
+    token_t token = {
+        .type = type,
+        .len  = len,
+        .ln   = lexer->line,
+        .col  = start+1,
+    };
+    
+    token.token = (char*)malloc(sizeof(char) * (len + 1));
+    memcpy(token.token, lexer->src + start, len);
+    token.token[len] = '\0';
+    return token;
 }
 
 inline static void lexer_resize(lexer_t *lexer) {
@@ -63,22 +74,22 @@ inline static void lexer_push(lexer_t *lexer, token_t token) {
 
 static void lexer_skipws(lexer_t *lexer) {
     i16_t start = lexer->pos;
-    char c      = lexer_peekc(lexer);
+    char c      = lexer_peekc(lexer, 0);
     while (!lexer_iseof(c) && isspace(c)) {
         if (c == '\n') {
             lexer_push(lexer, lexer_make_token(lexer, t_newline, start, 1));
             ++lexer->line;
         }
         lexer_nextc(lexer);
-        c = lexer_peekc(lexer);
+        c = lexer_peekc(lexer, 0);
     }
 }
 
 inline static void lexer_readnum(lexer_t *lexer) {
-    char c = lexer_peekc(lexer);
+    char c = lexer_peekc(lexer, 0);
     while (!lexer_iseof(c) && isdigit(c)) { 
         lexer_nextc(lexer);
-        c = lexer_peekc(lexer); 
+        c = lexer_peekc(lexer, 0); 
     }    
 }
 
@@ -87,7 +98,7 @@ static void lexer_push_number(lexer_t *lexer) {
     size_t start = lexer->pos;
     
     lexer_readnum(lexer);
-    char c = lexer_peekc(lexer);
+    char c = lexer_peekc(lexer, 0);
     if (c == '.') {
         lexer_nextc(lexer);
         lexer_readnum(lexer);
@@ -99,24 +110,24 @@ static void lexer_push_number(lexer_t *lexer) {
 
 static void lexer_push_unrecognized(lexer_t *lexer) {
     size_t start = lexer->pos;
-    char c = lexer_peekc(lexer);
+    char c = lexer_peekc(lexer, 0);
     while (!lexer_iseof(c) && !lexer_isdelim(c)) { 
         lexer_nextc(lexer);
-        c = lexer_peekc(lexer); 
+        c = lexer_peekc(lexer, 0); 
     }
     lexer_push(lexer, lexer_make_token(lexer, t_unrecognised, start, lexer->pos - start));
 }
 
-void lexer_tokenize_file(lexer_t *lexer, const char *fname) {
-    char   *src = lexer_read_file(fname);
-    lexer->src  = src;
-    lexer->pos  = 0;
-
-    char cur    = lexer_peekc(lexer);
+void lexer_tokenize_string(lexer_t *lexer, const char *src) {
+    lexer->src = src;
+    lexer->pos = 0;
+    char cur   = lexer_peekc(lexer, 0);
     while (!lexer_iseof(cur)) {
         lexer_skipws(lexer);
-        cur = lexer_peekc(lexer);
+        cur = lexer_peekc(lexer, 0);
         switch (cur) {
+        case '\0':
+            break;
         case '+':
             lexer_push(lexer, lexer_make_token(lexer, t_plus, lexer->pos, 1));
             lexer_nextc(lexer);
@@ -130,7 +141,7 @@ void lexer_tokenize_file(lexer_t *lexer, const char *fname) {
             lexer_nextc(lexer);
             break;
         case '*':
-            if (lexer_peekc(lexer) == '*') {
+            if (lexer_peekc(lexer, 1) == '*') {
                 lexer_push(lexer, lexer_make_token(lexer, t_pow, lexer->pos, 1));
                 lexer_nextc(lexer);
             } else {
@@ -155,9 +166,19 @@ void lexer_tokenize_file(lexer_t *lexer, const char *fname) {
             else lexer_push_unrecognized(lexer);
             break;
         }
-        cur = lexer_peekc(lexer);
+        cur = lexer_peekc(lexer, 0);
     }
     lexer_push(lexer, lexer_make_token(lexer, t_eof, lexer->pos, 0));
+    lexer->src = NULL;
+    lexer->pos = 0;
+}
+
+void lexer_tokenize_file(lexer_t *lexer, const char *fname) {
+    char *src = lexer_read_file(fname);
+    lexer_tokenize_string(lexer, src);
+    free(src);
+    lexer->src = NULL;
+    lexer->pos = 0;
 }
 
 lexer_t *lexer_new(void) {
@@ -178,7 +199,12 @@ void lexer_print_tokens(lexer_t *lexer) {
 }
 
 void lexer_delete(lexer_t *lexer) {
-    free(lexer->src);
-    free(lexer->tokens);
-    free(lexer);
+    if (!lexer) return;
+    if (lexer->src) free((void*)lexer->src);
+    if (lexer->tokens) {
+        for (i32_t i = 0; i < lexer->size; ++i) 
+            if (lexer->tokens[i].token) free(lexer->tokens[i].token);
+        free(lexer->tokens);
+    }
+    if (lexer) free(lexer);
 }
