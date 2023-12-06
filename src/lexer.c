@@ -17,14 +17,20 @@ static char *lexer_read_file(char const *fname) {
     FILE *fd = fopen(fname, "rb");
     if (!fd) error("could not open file: %s", fname);
     
-    if (fseek(fd, 0, SEEK_END) == -1) error("could not read file: %s", fname);
+    if (fseek(fd, 0, SEEK_END) == -1) {
+        fclose(fd);
+        error("could not read file: %s", fname);
+    }
     
     i64_t fsize = ftell(fd);
     fseek(fd, 0, SEEK_SET);
 
     char *content = (char*)malloc(sizeof(char) * (fsize+1));
-    if ((i64_t)fread(content, sizeof(char), fsize, fd) != fsize) 
+    if ((i64_t)fread(content, sizeof(char), fsize, fd) != fsize) {
+        free(content);
+        fclose(fd);
         error("could not read whole file: %s", fname);
+    }
     content[fsize] = '\0';
     fclose(fd);
     return content;
@@ -39,10 +45,12 @@ inline static bool lexer_isdelim(char c) {
 }
 
 inline static char lexer_nextc(lexer_t *lexer) {
+    if (lexer->pos >= lexer->slen) return '\0';
     return lexer->src[lexer->pos++];
 }
 
 inline static char lexer_peekc(lexer_t *lexer, i32_t offset) {
+    if (lexer->pos + offset >= lexer->slen) return '\0';
     return lexer->src[lexer->pos + offset];
 }
 
@@ -118,10 +126,12 @@ static void lexer_push_unrecognized(lexer_t *lexer) {
     lexer_push(lexer, lexer_make_token(lexer, t_unrecognised, start, lexer->pos - start));
 }
 
-void lexer_tokenize_string(lexer_t *lexer, const char *src) {
-    lexer->src = src;
-    lexer->pos = 0;
-    char cur   = lexer_peekc(lexer, 0);
+void lexer_tokenize_string(lexer_t *lexer, const char *src, char const *fname) {
+    lexer->fname = fname;
+    lexer->src   = src;
+    lexer->slen  = strlen(src);
+    lexer->pos   = 0;
+    char cur     = lexer_peekc(lexer, 0);
     while (!lexer_iseof(cur)) {
         lexer_skipws(lexer);
         cur = lexer_peekc(lexer, 0);
@@ -169,16 +179,23 @@ void lexer_tokenize_string(lexer_t *lexer, const char *src) {
         cur = lexer_peekc(lexer, 0);
     }
     lexer_push(lexer, lexer_make_token(lexer, t_eof, lexer->pos, 0));
-    lexer->src = NULL;
-    lexer->pos = 0;
+    lexer->src  = NULL;
+    lexer->slen = 0;
+    lexer->pos  = 0;
 }
 
 void lexer_tokenize_file(lexer_t *lexer, const char *fname) {
     char *src = lexer_read_file(fname);
-    lexer_tokenize_string(lexer, src);
+    lexer_tokenize_string(lexer, src, fname);
     free(src);
     lexer->src = NULL;
+    lexer->slen = 0;
     lexer->pos = 0;
+}
+
+token_t lexer_get_token(const lexer_t *lexer, i16_t index) {
+    if (index >= lexer->size) return lexer->tokens[lexer->size-1];
+    return lexer->tokens[index];
 }
 
 lexer_t *lexer_new(void) {
