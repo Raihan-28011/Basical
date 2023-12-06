@@ -6,12 +6,13 @@
 
 tester_t g_tester = {
     .tests  = 0,
+    .passed = 0,
     .errors = 0,
 };
 
 static i32_t test_lexer_tokenize_string(void) {
     lexer_t *lexer = lexer_new();
-    lexer_tokenize_string(lexer, "(132322 +4454545        ) \n\n\n* 3433");
+    lexer_tokenize_string(lexer, "(132322 +4454545        ) \n\n\n* 3433", "repl");
 
     tokentype_t expected[] = {
         t_lparen, t_iliteral, t_plus, t_iliteral, t_rparen, 
@@ -21,9 +22,15 @@ static i32_t test_lexer_tokenize_string(void) {
         t_star, t_iliteral, t_eof,
     };
 
-    if (ARRAY_SIZE(expected) != lexer->size) return -1;
+    if (ARRAY_SIZE(expected) != lexer->size) {
+        lexer_delete(lexer);        
+        return -1;
+    }
     for (i32_t i = 0; i < ARRAY_SIZE(expected); ++i) {
-        if (lexer->tokens[i].type != expected[i]) return -1;
+        if (lexer->tokens[i].type != expected[i]) {
+            lexer_delete(lexer);
+            return -1;
+        }
     }
 
     lexer_delete(lexer);
@@ -51,9 +58,15 @@ static i32_t test_lexer_tokenize_file(void) {
         t_eof
     };
 
-    if (ARRAY_SIZE(expected) != lexer->size) return -1;
+    if (ARRAY_SIZE(expected) != lexer->size) {
+        lexer_delete(lexer);
+        return -1;
+    }
     for (i32_t i = 0; i < ARRAY_SIZE(expected); ++i) {
-        if (lexer->tokens[i].type != expected[i]) return -1;
+        if (lexer->tokens[i].type != expected[i]) {
+            lexer_delete(lexer);
+            return -1;
+        }
     }
 
     lexer_delete(lexer);
@@ -62,6 +75,9 @@ static i32_t test_lexer_tokenize_file(void) {
 
 int main(void) {
     TRY(test_lexer_tokenize_string(), 0);
+    TRY(test_lexer_tokenize_string(), 0);
     TRY(test_lexer_tokenize_file(), 0);
+    TRY(test_lexer_tokenize_string(), 0);
+    TRY(test_lexer_tokenize_string(), 0);
     TEST_RESULT();
 }
