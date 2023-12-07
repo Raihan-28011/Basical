@@ -112,7 +112,7 @@ ast_expr_t *ast_expr_new(ast_node_t *term) {
     ast_expr_t *_n = (ast_expr_t*)malloc(sizeof(ast_expr_t));
     _n->base       = ast_node_new(AST_EXPR);
     _n->base.print = ast_expr_print;
-    _n->base.delete = ast_expr_print;
+    _n->base.delete = ast_expr_delete;
     _n->term       = term;
     return _n;
 }
@@ -201,7 +201,6 @@ void ast_number_print(ast_node_t *r) {
 }
 
 void ast_number_delete(ast_node_t *r) {
-    fprintf(stderr, "called number delete\n");
     free(r);
 }
 
