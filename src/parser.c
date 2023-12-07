@@ -74,7 +74,7 @@ static ast_node_t *parser_parse_factor(parser_t *parser) {
     ast_node_t *right = NULL;
         while (parser_is_next(parser, (tokentype_t[4]){ t_star, t_slash, t_mod, t_pow }, 4)) {
             tokentype_t op = parser_nexttok(parser).type;
-            right = (ast_node_t*)parser_parse_factor(parser);
+            right = (ast_node_t*)parser_parse_unary(parser);
             left  = (ast_node_t*)ast_factor_new(left, right,
                                 ast_convert_toktype_to_astoptype(op));
         }
@@ -86,7 +86,7 @@ static ast_node_t *parser_parse_term(parser_t *parser) {
     ast_node_t *right = NULL;
     while (parser_is_next(parser, (tokentype_t[2]){ t_plus, t_minus }, 2)) {
         tokentype_t op = parser_nexttok(parser).type;
-        right = (ast_node_t*)parser_parse_term(parser);
+        right = (ast_node_t*)parser_parse_factor(parser);
         left = (ast_node_t*)ast_term_new(left, right, ast_convert_toktype_to_astoptype(op));
     }
     return left;

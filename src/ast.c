@@ -29,13 +29,13 @@ ast_node_t ast_node_new(ast_node_type_t type) {
 
 void ast_main_print(ast_node_t *r) {
     ast_main_t *m = (ast_main_t*)r;
-    fprintf(stderr, "{\n");
+    fprintf(stderr, "(main\n");
     ++indent;
     for (i16_t i = 0; i < m->size; ++i) {
         m->stmts[i]->print(m->stmts[i]);
     }
     --indent;
-    fprintf(stderr, "}\n");
+    fprintf(stderr, "main)\n");
 }
 
 void ast_main_delete(ast_node_t *r) {
@@ -75,9 +75,11 @@ ast_node_t *ast_main_insert(ast_main_t *main, ast_node_t *stmt) {
 
 void ast_stmt_print(ast_node_t *r) {
     ast_stmt_t *s = (ast_stmt_t*)r;
-    fprintf(stderr, "%*s(stmt ", indent*4, " ");
+    fprintf(stderr, "%*s(stmt\n", indent*4, " ");
+    ++indent;
     s->expr->print(s->expr);
-    fprintf(stderr, ")\n");
+    --indent;
+    fprintf(stderr, "%*sstmt)\n", indent*4, " ");
 }
 
 void ast_stmt_delete(ast_node_t *r) {
@@ -97,9 +99,11 @@ ast_stmt_t *ast_stmt_new(ast_node_t *expr) {
 
 void ast_expr_print(ast_node_t *r) {
     ast_expr_t *e = (ast_expr_t*)r;
-    fprintf(stderr, "(expr ");
+    fprintf(stderr, "%*s(expr\n", indent*4, " ");
+    ++indent;
     e->term->print(e->term);
-    fprintf(stderr, ")");
+    --indent;
+    fprintf(stderr, "%*sexpr)\n", indent*4, " ");
 }
 
 void ast_expr_delete(ast_node_t *r) {
@@ -119,10 +123,12 @@ ast_expr_t *ast_expr_new(ast_node_t *term) {
 
 void ast_term_print(ast_node_t *r) {
     ast_term_t *t = (ast_term_t*)r;
-    fprintf(stderr, "(term ");
+    fprintf(stderr, "%*s(term\n", indent*4, " ");
+    ++indent;
     t->left->print(t->left);
     t->right->print(t->right);
-    fprintf(stderr, "%s)", ast_op_type_to_str[t->op]);
+    --indent;
+    fprintf(stderr, "%*s%s\n%*sterm)\n", (indent+1)*4, " ", ast_op_type_to_str[t->op], indent*4, " ");
 }
 
 void ast_term_delete(ast_node_t *r) {
@@ -145,10 +151,12 @@ ast_term_t *ast_term_new(ast_node_t *left, ast_node_t *right, ast_op_type_t op) 
 
 void ast_factor_print(ast_node_t *r) {
     ast_factor_t *f = (ast_factor_t*)r;
-    fprintf(stderr, "(factor ");
+    fprintf(stderr, "%*s(factor\n", indent*4, " ");
+    ++indent;
     f->left->print(f->left);
     f->right->print(f->right);
-    fprintf(stderr, "%s)", ast_op_type_to_str[f->op]);
+    --indent;
+    fprintf(stderr, "%*s%s\n%*sfactor)\n", (indent+1)*4, " ", ast_op_type_to_str[f->op], indent*4, " ");
 }
 
 void ast_factor_delete(ast_node_t *r) {
@@ -171,9 +179,11 @@ ast_factor_t *ast_factor_new(ast_node_t *left, ast_node_t *right, ast_op_type_t 
 
 void ast_unary_print(ast_node_t *r) {
     ast_unary_t *u = (ast_unary_t*)r;
-    fprintf(stderr, "(unary ");
+    fprintf(stderr, "%*s(unary\n", indent*4, " ");
+    ++indent;
     u->expr->print(u->expr);
-    fprintf(stderr, ")");
+    --indent;
+    fprintf(stderr, "%*sunary)\n", indent*4, " ");
 }
 
 void ast_unary_delete(ast_node_t *r) {
@@ -195,9 +205,9 @@ ast_unary_t *ast_unary_new(ast_node_t *expr) {
 void ast_number_print(ast_node_t *r) {
     ast_number_t *n = (ast_number_t*)r;
     if (n->base.type == AST_INUMBER)
-        fprintf(stderr, "%lld ", (long long)n->num.i);
+        fprintf(stderr, "%*s%lld\n", indent*4, " ", (long long)n->num.i);
     else
-     fprintf(stderr, "%lf ", (double)n->num.f);
+     fprintf(stderr, "%*s%lf\n", indent*4, " ", (double)n->num.f);
 }
 
 void ast_number_delete(ast_node_t *r) {
