@@ -20,24 +20,24 @@ typedef struct ast_unary ast_unary_t;
 typedef struct ast_number ast_number_t;
 typedef union  ast_number_internal ast_number_internal_t;
 typedef enum ast_node_type {
-    AST_MAIN,
-    AST_STMT,
-    AST_EXPR,
-    AST_TERM,
-    AST_FACTOR,
-    AST_UNARY, 
-    AST_INUMBER,
-    AST_FNUMBER,
+    ast_node_main,
+    ast_node_stmt,
+    ast_node_expr,
+    ast_node_term,
+    ast_node_factor,
+    ast_node_unary, 
+    ast_node_inumber,
+    ast_node_fnumber,
 } ast_node_type_t;
 
 typedef enum ast_op_type {
-  AST_BIN_OP_PLUS, 
-  AST_BIN_OP_MINUS, 
-  AST_BIN_OP_STAR, 
-  AST_BIN_OP_SLASH,
-  AST_BIN_OP_MOD, 
-  AST_BIN_OP_POW,
-  AST_OP_UNKNOWN,
+  ast_bin_op_plus, 
+  ast_bin_op_minus, 
+  ast_bin_op_star, 
+  ast_bin_op_slash,
+  ast_bin_op_mod, 
+  ast_bin_op_pow,
+  ast_op_unknown,
 } ast_op_type_t;
 
 struct ast_node {

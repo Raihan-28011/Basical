@@ -1,6 +1,5 @@
 #include "test.h"
 #include "../src/lexer.h"
-#include <stdio.h>
 
 #define ARRAY_SIZE(arr) (i32_t)(sizeof(arr)/sizeof(*arr))
 
@@ -54,7 +53,6 @@ static i32_t test_lexer_tokenize_file(void) {
         t_lparen, t_fliteral,  t_rparen, 
         t_plus, t_iliteral, 
         t_newline,
-        t_newline,
         t_eof
     };
 
@@ -75,9 +73,6 @@ static i32_t test_lexer_tokenize_file(void) {
 
 int main(void) {
     TRY(test_lexer_tokenize_string(), 0);
-    TRY(test_lexer_tokenize_string(), 0);
     TRY(test_lexer_tokenize_file(), 0);
-    TRY(test_lexer_tokenize_string(), 0);
-    TRY(test_lexer_tokenize_string(), 0);
     TEST_RESULT();
 }
