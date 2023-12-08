@@ -15,11 +15,15 @@
 
 static char *lexer_read_file(char const *fname) {
     FILE *fd = fopen(fname, "rb");
-    if (!fd) error("could not open file: %s", fname);
+    if (!fd) {
+        em_lexical_error(et_could_not_open_file, "%s", fname);
+        return NULL;
+    }
     
     if (fseek(fd, 0, SEEK_END) == -1) {
         fclose(fd);
-        error("could not read file: %s", fname);
+        em_lexical_error(et_could_not_read_file, "%s", fname);
+        return NULL;
     }
     
     i64_t fsize = ftell(fd);
@@ -29,7 +33,8 @@ static char *lexer_read_file(char const *fname) {
     if ((i64_t)fread(content, sizeof(char), fsize, fd) != fsize) {
         free(content);
         fclose(fd);
-        error("could not read whole file: %s", fname);
+        em_lexical_error(et_could_not_read_file, "%s", fname);
+        return NULL;
     }
     content[fsize] = '\0';
     fclose(fd);
@@ -46,6 +51,7 @@ inline static bool lexer_isdelim(char c) {
 
 inline static char lexer_nextc(lexer_t *lexer) {
     if (lexer->pos >= lexer->slen) return '\0';
+    ++lexer->col;
     return lexer->src[lexer->pos++];
 }
 
@@ -59,7 +65,7 @@ inline static token_t lexer_make_token(lexer_t *lexer, tokentype_t type, i16_t s
         .type = type,
         .len  = len,
         .ln   = lexer->line,
-        .col  = start+1,
+        .col  = lexer->col-len+1,
     };
     
     token.token = (char*)malloc(sizeof(char) * (len + 1));
@@ -87,6 +93,7 @@ static void lexer_skipws(lexer_t *lexer) {
         if (c == '\n') {
             lexer_push(lexer, lexer_make_token(lexer, t_newline, start, 1));
             ++lexer->line;
+            lexer->col = 0;
         }
         lexer_nextc(lexer);
         c = lexer_peekc(lexer, 0);
@@ -186,6 +193,10 @@ void lexer_tokenize_string(lexer_t *lexer, const char *src, char const *fname) {
 
 void lexer_tokenize_file(lexer_t *lexer, const char *fname) {
     char *src = lexer_read_file(fname);
+    if (!src) {
+        lexer->error_occured = true;
+        return;
+    }
     lexer_tokenize_string(lexer, src, fname);
     free(src);
     lexer->src = NULL;
@@ -199,13 +210,15 @@ token_t lexer_get_token(const lexer_t *lexer, i16_t index) {
 }
 
 lexer_t *lexer_new(void) {
-    lexer_t *_n = (lexer_t*)malloc(sizeof(lexer_t));
-    _n->size    = 0;
-    _n->cap     = 1;
-    _n->tokens  = NULL;
-    _n->line    = 1;
-    _n->src     = NULL;
-    _n->pos     = 0;
+    lexer_t *_n         = (lexer_t*)malloc(sizeof(lexer_t));
+    _n->size            = 0;
+    _n->cap             = 1;
+    _n->tokens          = NULL;
+    _n->line            = 1;
+    _n->col             = 0;
+    _n->error_occured   = false;
+    _n->src             = NULL;
+    _n->pos             = 0;
     return _n;
 }
 

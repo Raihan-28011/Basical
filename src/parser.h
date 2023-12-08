@@ -8,12 +8,14 @@
 
 #include "ast.h"
 #include "lexer.h"
+#include <stdbool.h>
 
 typedef struct parser parser_t;
 struct parser {
-    i16_t         curtok;   // Current token position
-    i16_t         tsize;    // No. of tokens
-    lexer_t const *lexer;   // The lexer containing all the tokens
+    i16_t         curtok;        // Current token position
+    i16_t         tsize;         // No. of tokens
+    bool          error_occured; // Has error occured
+    lexer_t const *lexer;        // The lexer containing all the tokens
 };
 
 parser_t    *parser_new(lexer_t const *lexer);

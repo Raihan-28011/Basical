@@ -11,11 +11,12 @@
 #include <stdlib.h>
 
 parser_t *parser_new(lexer_t const *lexer) {
-    parser_t *_n  = (parser_t*)malloc(sizeof(parser_t));
+    parser_t *_n        = (parser_t*)malloc(sizeof(parser_t));
     if (lexer) 
-        _n->lexer = lexer;
-    _n->curtok    = 0;
-    _n->tsize     = (lexer ? lexer->size : 0);
+        _n->lexer       = lexer;
+    _n->curtok          = 0;
+    _n->tsize           = (lexer ? lexer->size : 0);
+    _n->error_occured   = false;
     return _n;
 }
 
@@ -53,8 +54,8 @@ static ast_node_t *parser_parse_num(parser_t *parser) {
         token_t num = parser_nexttok(parser);
         if (num.type == t_iliteral) 
             return (ast_node_t*)ast_number_new((ast_number_internal_t) { .i = strtoll(num.token, NULL, 10) }, 
-                                                AST_INUMBER);
-        return (ast_node_t*)ast_number_new((ast_number_internal_t){ .f = strtod(num.token, NULL) }, AST_FNUMBER);
+                                                ast_node_inumber);
+        return (ast_node_t*)ast_number_new((ast_number_internal_t){ .f = strtod(num.token, NULL) }, ast_node_fnumber);
     }
 
     return NULL;
@@ -64,46 +65,58 @@ static ast_node_t *parser_parse_unary(parser_t *parser) {
     if (parser_is_next(parser, (tokentype_t[1]){ t_lparen }, 1)) {
         // TODO: parser group statement
         return NULL;
-    } else {
+    } else if (parser_is_next(parser, (tokentype_t[2]){ t_iliteral, t_fliteral }, 2)) {
         return parser_parse_num(parser);
+    } else if (parser_is_next(parser, (tokentype_t[1]){ t_eof }, 1)) {
+        return NULL;   
+    } else {
+        token_t tok = parser_nexttok(parser);
+        em_parsing_error(et_expected_expression, tok.ln, tok.col);
+        parser->error_occured = true;
+        return NULL;
     }
 }
 
 static ast_node_t *parser_parse_factor(parser_t *parser) {
     ast_node_t *left = (ast_node_t*)parser_parse_unary(parser);
     ast_node_t *right = NULL;
-        while (parser_is_next(parser, (tokentype_t[4]){ t_star, t_slash, t_mod, t_pow }, 4)) {
-            tokentype_t op = parser_nexttok(parser).type;
-            right = (ast_node_t*)parser_parse_unary(parser);
-            left  = (ast_node_t*)ast_factor_new(left, right,
-                                ast_convert_toktype_to_astoptype(op));
-        }
+    while (!parser->error_occured && parser_is_next(parser, (tokentype_t[4]){ t_star, t_slash, t_mod, t_pow }, 4)) {
+        tokentype_t op = parser_nexttok(parser).type;
+        right = (ast_node_t*)parser_parse_unary(parser);
+        left  = (ast_node_t*)ast_factor_new(left, right,
+                            ast_convert_toktype_to_astoptype(op));
+    }
+
     return left;
 }
 
 static ast_node_t *parser_parse_term(parser_t *parser) {
     ast_node_t *left = (ast_node_t*)parser_parse_factor(parser); 
     ast_node_t *right = NULL;
-    while (parser_is_next(parser, (tokentype_t[2]){ t_plus, t_minus }, 2)) {
+    while (!parser->error_occured && parser_is_next(parser, (tokentype_t[2]){ t_plus, t_minus }, 2)) {
         tokentype_t op = parser_nexttok(parser).type;
         right = (ast_node_t*)parser_parse_factor(parser);
         left = (ast_node_t*)ast_term_new(left, right, ast_convert_toktype_to_astoptype(op));
     }
+
     return left;
 }
 
 static ast_node_t *parser_parse_expr(parser_t *parser) {
     ast_node_t *term = parser_parse_term(parser);
     ast_node_t *expr = (ast_node_t*)ast_expr_new(term);
+    if (parser->error_occured) return NULL;
     return expr;
 }
 
 static ast_node_t *parser_parse_stmt(parser_t *parser) {
     ast_node_t *expr = parser_parse_expr(parser);
     ast_node_t *stmt = (ast_node_t*)ast_stmt_new(expr);
-    if (!parser_match(parser, t_newline, 0)) {
+    if (!parser->error_occured && !parser_match(parser, t_newline, 0)) {
         token_t tok = parser_nexttok(parser);
-        error("%s:%d:%d expected new line", parser->lexer->fname, tok.ln, tok.col);
+        em_parsing_error(et_expected_newline, tok.ln, tok.col);
+        parser->error_occured = true;
+        return stmt;
     }
     parser_nexttok(parser);
     return stmt;
@@ -112,11 +125,14 @@ static ast_node_t *parser_parse_stmt(parser_t *parser) {
 ast_main_t *parser_parse(parser_t *parser) {
     ast_main_t *main = ast_main_new();
     token_t tok = parser_peektok(parser, 0);
-    while (tok.type != t_eof) {
+    em_set_fname(parser->lexer->fname);
+    em_push_function("main", tok.ln, tok.col);
+    while (!parser->error_occured && tok.type != t_eof) {
         ast_node_t *stmt = (ast_node_t*)parser_parse_stmt(parser);
         ast_main_insert(main, stmt);
         tok = parser_peektok(parser, 0);
     }
+    em_pop_function();
 
     return main;
 }
