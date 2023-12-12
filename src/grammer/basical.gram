@@ -19,13 +19,13 @@ stmt ::= expr NEWLINE
 
 expr ::= term
 
-term ::= factor + term 
-       | factor - term
+term ::= term + factor
+       | term - factor
        | factor
 
-factor ::= unary * factor
-         | unary / factor
-         | unary % factor
+factor ::= factor * unary
+         | factor / unary
+         | factor % unary
          | unary
 
 unary ::= '(' expr ')'

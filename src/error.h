@@ -7,7 +7,6 @@
 #define __BASICAL_ERROR_H__
 
 #include "common.h"
-#include "token.h"
 #define MAX_CALL_STACK_LIMIT 10
 
 typedef struct error_manager error_manager_t;
@@ -19,11 +18,11 @@ struct call_chain {
 };
 
 typedef enum error_type {
-    et_could_not_open_file,
-    et_could_not_read_file,
-    et_expected_expression,
-    et_expected_operator,
-    et_expected_newline,
+    ECNOF,
+    ECNRF,
+    EEEXP,
+    EEOP,
+    EENL,
 } error_type_t;
 
 struct error_manager {

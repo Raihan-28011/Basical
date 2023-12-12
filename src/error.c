@@ -56,7 +56,7 @@ void em_push_function(char *name, i16_t line, i16_t col) {
 
 void em_pop_function(void) {
     if (em.cssize - 1 < 0) {
-        fprintf(stderr, "fatal: at function %s: call stack limit exceeded\n", em.fname);
+        fprintf(stderr, "fatal: at function %s: call stack is already empty\n", em.fname);
         return; 
     }
     --em.cssize;
