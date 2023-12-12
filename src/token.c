@@ -6,14 +6,14 @@
 #include "token.h"
 
 char const *token_to_str[] = {
+  "t_eof", "t_newline", "t_unrecognised",
   "t_plus", "t_minus", "t_star", "t_slash",
   "t_mod", "t_pow", 
   "t_lparen", "t_rparen",
   "t_iliteral", "t_fliteral", 
-  "t_newline", "t_eof", "t_unrecognised"
 };
 
 void token_print(token_t *token) {
-    printf("%s ", token_to_str[token->type]);
+    fprintf(stderr, "%s(%d:%d:%d) ", token_to_str[token->type], token->ln, token->col, token->len);
     if (token->type == t_newline || token->type == t_eof) printf("\n");
 }

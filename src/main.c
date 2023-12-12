@@ -4,9 +4,10 @@
  */
 
 #include "main.h"
-#include "error.h"
+#include "ast.h"
 #include "lexer.h"
 #include "parser.h"
+#include <stdio.h>
 #include <stdlib.h>
 
 typedef struct {
@@ -19,6 +20,7 @@ globals_t g_vars;
 void atexit_callback(void) {
     lexer_delete(g_vars.lexer);
     parser_delete(g_vars.parser);
+    if (ast_print_buf) ast_print_buf_delete();
 }
 
 void usage(void) {
@@ -38,9 +40,10 @@ int main(int argc, char *argv[]) {
     lexer_print_tokens(g_vars.lexer);
 
     g_vars.parser = parser_new(g_vars.lexer);
-    ast_main_t *m = parser_parse(g_vars.parser);
+    ast_module_t *m = parser_parse(g_vars.parser);
     if (m) {
         m->base.print((ast_node_t*)m);
+        fprintf(stderr, "%s", ast_print_buf);
     }
-    m->base.delete((ast_node_t*)m);
+    if (m) m->base.delete((ast_node_t*)m);
 }

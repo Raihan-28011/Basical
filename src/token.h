@@ -10,6 +10,9 @@
 #include <stdio.h>
 
 typedef enum tokentype {
+  /* Special tokens */
+  t_eof, t_newline, t_unrecognized,
+
   /* Operators */
   t_plus, t_minus, t_star, t_slash,
   t_mod, t_pow, 
@@ -19,9 +22,6 @@ typedef enum tokentype {
 
  /* Literals */
   t_iliteral, t_fliteral,
-
-  /* Special tokens */
-  t_newline, t_eof, t_unrecognised
 } tokentype_t;
 
 typedef struct token token_t;

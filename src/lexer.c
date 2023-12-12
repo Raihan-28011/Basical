@@ -16,16 +16,16 @@
 static char *lexer_read_file(char const *fname) {
     FILE *fd = fopen(fname, "rb");
     if (!fd) {
-        em_lexical_error(et_could_not_open_file, "%s", fname);
+        em_lexical_error(ECNOF, "%s", fname);
         return NULL;
     }
-    
+
     if (fseek(fd, 0, SEEK_END) == -1) {
         fclose(fd);
-        em_lexical_error(et_could_not_read_file, "%s", fname);
+        em_lexical_error(ECNRF, "%s", fname);
         return NULL;
     }
-    
+
     i64_t fsize = ftell(fd);
     fseek(fd, 0, SEEK_SET);
 
@@ -33,7 +33,7 @@ static char *lexer_read_file(char const *fname) {
     if ((i64_t)fread(content, sizeof(char), fsize, fd) != fsize) {
         free(content);
         fclose(fd);
-        em_lexical_error(et_could_not_read_file, "%s", fname);
+        em_lexical_error(ECNRF, "%s", fname);
         return NULL;
     }
     content[fsize] = '\0';
@@ -46,7 +46,7 @@ inline static bool lexer_iseof(char c) {
 }
 
 inline static bool lexer_isdelim(char c) {
-    return isspace(c) || c == '\0' || c == '\n' || c == '(' || c == ')'; 
+    return isspace(c) || c == '\0' || c == '\n' || c == '(' || c == ')';
 }
 
 inline static char lexer_nextc(lexer_t *lexer) {
@@ -60,16 +60,16 @@ inline static char lexer_peekc(lexer_t *lexer, i32_t offset) {
     return lexer->src[lexer->pos + offset];
 }
 
-inline static token_t lexer_make_token(lexer_t *lexer, tokentype_t type, i16_t start, i16_t len) {
+inline static token_t lexer_make_token(lexer_t *lexer, tokentype_t type, i16_t curpos, i16_t len) {
     token_t token = {
         .type = type,
         .len  = len,
         .ln   = lexer->line,
         .col  = lexer->col-len+1,
     };
-    
+
     token.token = (char*)malloc(sizeof(char) * (len + 1));
-    memcpy(token.token, lexer->src + start, len);
+    memcpy(token.token, lexer->src + curpos - len, len);
     token.token[len] = '\0';
     return token;
 }
@@ -102,16 +102,16 @@ static void lexer_skipws(lexer_t *lexer) {
 
 inline static void lexer_readnum(lexer_t *lexer) {
     char c = lexer_peekc(lexer, 0);
-    while (!lexer_iseof(c) && isdigit(c)) { 
+    while (!lexer_iseof(c) && isdigit(c)) {
         lexer_nextc(lexer);
-        c = lexer_peekc(lexer, 0); 
-    }    
+        c = lexer_peekc(lexer, 0);
+    }
 }
 
 static void lexer_push_number(lexer_t *lexer) {
     tokentype_t type = t_iliteral;
     size_t start = lexer->pos;
-    
+
     lexer_readnum(lexer);
     char c = lexer_peekc(lexer, 0);
     if (c == '.') {
@@ -120,17 +120,17 @@ static void lexer_push_number(lexer_t *lexer) {
         type = t_fliteral;
     }
 
-    lexer_push(lexer, lexer_make_token(lexer, type, start, lexer->pos - start));
+    lexer_push(lexer, lexer_make_token(lexer, type, lexer->pos, lexer->pos - start));
 }
 
 static void lexer_push_unrecognized(lexer_t *lexer) {
     size_t start = lexer->pos;
     char c = lexer_peekc(lexer, 0);
-    while (!lexer_iseof(c) && !lexer_isdelim(c)) { 
+    while (!lexer_iseof(c) && !lexer_isdelim(c)) {
         lexer_nextc(lexer);
-        c = lexer_peekc(lexer, 0); 
+        c = lexer_peekc(lexer, 0);
     }
-    lexer_push(lexer, lexer_make_token(lexer, t_unrecognised, start, lexer->pos - start));
+    lexer_push(lexer, lexer_make_token(lexer, t_unrecognized, lexer->pos, lexer->pos - start));
 }
 
 void lexer_tokenize_string(lexer_t *lexer, const char *src, char const *fname) {
@@ -146,37 +146,38 @@ void lexer_tokenize_string(lexer_t *lexer, const char *src, char const *fname) {
         case '\0':
             break;
         case '+':
-            lexer_push(lexer, lexer_make_token(lexer, t_plus, lexer->pos, 1));
             lexer_nextc(lexer);
+            lexer_push(lexer, lexer_make_token(lexer, t_plus, lexer->pos, 1));
             break;
         case '-':
-            lexer_push(lexer, lexer_make_token(lexer, t_minus, lexer->pos, 1));
             lexer_nextc(lexer);
+            lexer_push(lexer, lexer_make_token(lexer, t_minus, lexer->pos, 1));
             break;
         case '/':
-            lexer_push(lexer, lexer_make_token(lexer, t_slash, lexer->pos, 1));
             lexer_nextc(lexer);
+            lexer_push(lexer, lexer_make_token(lexer, t_slash, lexer->pos, 1));
             break;
         case '*':
             if (lexer_peekc(lexer, 1) == '*') {
-                lexer_push(lexer, lexer_make_token(lexer, t_pow, lexer->pos, 1));
                 lexer_nextc(lexer);
+                lexer_nextc(lexer);
+                lexer_push(lexer, lexer_make_token(lexer, t_pow, lexer->pos, 1));
             } else {
+                lexer_nextc(lexer);
                 lexer_push(lexer, lexer_make_token(lexer, t_star, lexer->pos, 1));
             }
-            lexer_nextc(lexer);
             break;
         case '%':
-            lexer_push(lexer, lexer_make_token(lexer, t_mod, lexer->pos, 1));
             lexer_nextc(lexer);
+            lexer_push(lexer, lexer_make_token(lexer, t_mod, lexer->pos, 1));
             break;
         case '(':
-            lexer_push(lexer, lexer_make_token(lexer, t_lparen, lexer->pos, 1));
             lexer_nextc(lexer);
+            lexer_push(lexer, lexer_make_token(lexer, t_lparen, lexer->pos, 1));
             break;
         case ')':
-            lexer_push(lexer, lexer_make_token(lexer, t_rparen, lexer->pos, 1));
             lexer_nextc(lexer);
+            lexer_push(lexer, lexer_make_token(lexer, t_rparen, lexer->pos, 1));
             break;
         default:
             if (isdigit(cur)) lexer_push_number(lexer);
@@ -202,6 +203,8 @@ void lexer_tokenize_file(lexer_t *lexer, const char *fname) {
     lexer->src = NULL;
     lexer->slen = 0;
     lexer->pos = 0;
+    lexer->line = 1;
+    lexer->error_occured = false;
 }
 
 token_t lexer_get_token(const lexer_t *lexer, i16_t index) {
@@ -232,7 +235,7 @@ void lexer_delete(lexer_t *lexer) {
     if (!lexer) return;
     if (lexer->src) free((void*)lexer->src);
     if (lexer->tokens) {
-        for (i32_t i = 0; i < lexer->size; ++i) 
+        for (i32_t i = 0; i < lexer->size; ++i)
             if (lexer->tokens[i].token) free(lexer->tokens[i].token);
         free(lexer->tokens);
     }

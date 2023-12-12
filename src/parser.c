@@ -71,7 +71,7 @@ static ast_node_t *parser_parse_unary(parser_t *parser) {
         return NULL;   
     } else {
         token_t tok = parser_nexttok(parser);
-        em_parsing_error(et_expected_expression, tok.ln, tok.col);
+        em_parsing_error(EEEXP, tok.ln, tok.col);
         parser->error_occured = true;
         return NULL;
     }
@@ -112,9 +112,11 @@ static ast_node_t *parser_parse_expr(parser_t *parser) {
 static ast_node_t *parser_parse_stmt(parser_t *parser) {
     ast_node_t *expr = parser_parse_expr(parser);
     ast_node_t *stmt = (ast_node_t*)ast_stmt_new(expr);
-    if (!parser->error_occured && !parser_match(parser, t_newline, 0)) {
+    if (!parser->error_occured && 
+        !parser_match(parser, t_eof, 0) && 
+        !parser_match(parser, t_newline, 0)) {
         token_t tok = parser_nexttok(parser);
-        em_parsing_error(et_expected_newline, tok.ln, tok.col);
+        em_parsing_error(EENL, tok.ln, tok.col);
         parser->error_occured = true;
         return stmt;
     }
@@ -122,17 +124,22 @@ static ast_node_t *parser_parse_stmt(parser_t *parser) {
     return stmt;
 }
 
-ast_main_t *parser_parse(parser_t *parser) {
-    ast_main_t *main = ast_main_new();
+ast_module_t *parser_parse(parser_t *parser) {
+    ast_module_t *module = ast_module_new();
     token_t tok = parser_peektok(parser, 0);
     em_set_fname(parser->lexer->fname);
-    em_push_function("main", tok.ln, tok.col);
+    em_push_function("__global_main__", tok.ln, tok.col);
     while (!parser->error_occured && tok.type != t_eof) {
         ast_node_t *stmt = (ast_node_t*)parser_parse_stmt(parser);
-        ast_main_insert(main, stmt);
+        ast_module_insert(module, stmt);
         tok = parser_peektok(parser, 0);
     }
     em_pop_function();
 
-    return main;
+    if (parser->error_occured && module) {
+        module->base.delete((ast_node_t*)module);
+        module = NULL;
+    }
+
+    return module;
 }
