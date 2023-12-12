@@ -6,6 +6,7 @@
 #ifndef __BASICAL_LEXER_H__
 #define __BASICAL_LEXER_H__
 
+#include "common.h"
 #include "token.h"
 #include <stdbool.h>
 
@@ -13,7 +14,7 @@
 
 typedef struct lexer lexer_t;
 struct lexer {
-    i16_t      size;            // No. of tokens
+    i16_t      tcount;          // No. of tokens
     i16_t      cap;             // Token Capacity
     i16_t      line;            // Line no.
     i16_t      col;             // Column no.

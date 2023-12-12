@@ -4,6 +4,7 @@
  */
 
 #include "token.h"
+#include <stdio.h>
 
 char const *token_to_str[] = {
   "t_eof", "t_newline", "t_unrecognised",
@@ -14,6 +15,10 @@ char const *token_to_str[] = {
 };
 
 void token_print(token_t *token) {
-    fprintf(stderr, "%s(%d:%d:%d) ", token_to_str[token->type], token->ln, token->col, token->len);
-    if (token->type == t_newline || token->type == t_eof) printf("\n");
+    fprintf(stderr, "%s(%d:%d:%d) ", 
+            token_to_str[token->type], 
+            token->ln, 
+            token->col, 
+            token->len);
+    if (token->type == t_newline || token->type == t_eof) fprintf(stderr, "\n");
 }

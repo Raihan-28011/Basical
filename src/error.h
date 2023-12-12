@@ -23,6 +23,7 @@ typedef enum error_type {
     EEEXP,
     EEOP,
     EENL,
+    EMAF,
 } error_type_t;
 
 struct error_manager {
@@ -31,7 +32,7 @@ struct error_manager {
     i16_t cssize;
 };
 
-void em_lexical_error(error_type_t type, char const *fmt, ...);
+void em_error(error_type_t type, char const *fmt, ...);
 void em_parsing_error(error_type_t type, i16_t line, i16_t col);
 void em_push_function(char *name, i16_t line, i16_t col);
 void em_pop_function(void);

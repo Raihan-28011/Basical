@@ -35,15 +35,22 @@ int main(int argc, char *argv[]) {
     g_vars.lexer = lexer_new();
     lexer_tokenize_file(g_vars.lexer, argv[1]);
     if (g_vars.lexer->error_occured) {
-        return 0;
+        return -1;
     }
+
+#ifdef BASICAL_DEBUG
     lexer_print_tokens(g_vars.lexer);
+#endif
 
     g_vars.parser = parser_new(g_vars.lexer);
     ast_module_t *m = parser_parse(g_vars.parser);
+
+#ifdef BASICAL_DEBUG
     if (m) {
         m->base.print((ast_node_t*)m);
         fprintf(stderr, "%s", ast_print_buf);
     }
+#endif
+
     if (m) m->base.delete((ast_node_t*)m);
 }

@@ -41,7 +41,7 @@ static i32_t test_lexer_tokenize_string(void) {
         t_star, t_iliteral, t_eof,
     };
 
-    if (ARRAY_SIZE(expected) != lexer->size) {
+    if (ARRAY_SIZE(expected) != lexer->tcount) {
         lexer_delete(lexer);        
         return -1;
     }
@@ -76,7 +76,7 @@ static i32_t test_lexer_tokenize_file(void) {
         t_eof
     };
 
-    if (ARRAY_SIZE(expected) != lexer->size) {
+    if (ARRAY_SIZE(expected) != lexer->tcount) {
         lexer_delete(lexer);
         return -1;
     }
@@ -96,7 +96,7 @@ static i32_t test_parser_parse(void) {
     for (i32_t i = 0; i < ARRAY_SIZE(g_tests); ++i) {
         lexer_tokenize_string(lexer, g_tests[i].lex_str, "repl");
         
-        for (i32_t j = 0; j < lexer->size; ++j) {
+        for (i32_t j = 0; j < lexer->tcount; ++j) {
             if (lexer->tokens[j].type != g_tests[i].expected[j]) {
                 lexer_delete(lexer);
                 return -1;
