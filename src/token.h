@@ -7,7 +7,6 @@
 #define __BASICAL_TOKEN_H__
 
 #include "common.h"
-#include <stdio.h>
 
 typedef enum tokentype {
   /* Special tokens */

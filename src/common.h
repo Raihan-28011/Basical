@@ -6,6 +6,8 @@
 #ifndef __BASICAL_COMMON_H__
 #define __BASICAL_COMMON_H__
 
+#define BASICAL_DEBUG 1
+
 #include <stdint.h>
 
 typedef int16_t i16_t;

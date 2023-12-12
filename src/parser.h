@@ -7,6 +7,7 @@
 #define __BASICAL_PARSER_H__
 
 #include "ast.h"
+#include "common.h"
 #include "lexer.h"
 #include <stdbool.h>
 
@@ -18,8 +19,8 @@ struct parser {
     lexer_t const *lexer;        // The lexer containing all the tokens
 };
 
-parser_t    *parser_new(lexer_t const *lexer);
-void        parser_delete(parser_t *parser);
-ast_module_t  *parser_parse(parser_t *parser);
+parser_t     *parser_new(lexer_t const *lexer);
+void         parser_delete(parser_t *parser);
+ast_module_t *parser_parse(parser_t *parser);
 
 #endif // __BASICAL_PARSER_H__

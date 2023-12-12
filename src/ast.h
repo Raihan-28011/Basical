@@ -63,23 +63,23 @@ struct ast_expr {
 };
 
 struct ast_term {
-    ast_node_t base;
-    ast_op_type_t   op;
-    ast_node_t      *left;
-    ast_node_t      *right;
+    ast_node_t    base;
+    ast_op_type_t op;
+    ast_node_t    *left;
+    ast_node_t    *right;
 };
 
 struct ast_factor {
-    ast_node_t base;
-    ast_op_type_t   op;
-    ast_node_t      *left;
-    ast_node_t      *right;
+    ast_node_t    base;
+    ast_op_type_t op;
+    ast_node_t    *left;
+    ast_node_t    *right;
 };
 
 struct ast_unary {
-    ast_node_t base;
-    ast_op_type_t   op;
-    ast_node_t      *expr;
+    ast_node_t    base;
+    ast_op_type_t op;
+    ast_node_t    *expr;
 };
 
 union ast_number_internal {
@@ -88,18 +88,17 @@ union ast_number_internal {
 };
 
 struct ast_number {
-    ast_node_t base;
+    ast_node_t            base;
     ast_number_internal_t num;
 };
 
 extern char *ast_print_buf;
 extern i16_t a_blen;
 
-ast_node_t ast_node_new(ast_node_type_t type);
 ast_module_t *ast_module_new(void);
-ast_node_t *ast_module_insert(ast_module_t *main, ast_node_t *stmt);
-void       ast_module_print(ast_node_t *r);
-void       ast_module_delete(ast_node_t *r);
+ast_node_t   *ast_module_insert(ast_module_t *main, ast_node_t *stmt);
+void         ast_module_print(ast_node_t *r);
+void         ast_module_delete(ast_node_t *r);
 
 ast_stmt_t *ast_stmt_new(ast_node_t *expr);
 void       ast_stmt_print(ast_node_t *r);
@@ -114,18 +113,18 @@ void       ast_term_print(ast_node_t *r);
 void       ast_term_delete(ast_node_t *r);
 
 ast_factor_t *ast_factor_new(ast_node_t *left, ast_node_t *right, ast_op_type_t op);
-void       ast_factor_print(ast_node_t *r);
-void       ast_factor_delete(ast_node_t *r);
+void         ast_factor_print(ast_node_t *r);
+void         ast_factor_delete(ast_node_t *r);
 
 ast_unary_t *ast_unary_new(ast_node_t *expr);
-void       ast_unary_print(ast_node_t *r);
-void       ast_unary_delete(ast_node_t *r);
+void        ast_unary_print(ast_node_t *r);
+void        ast_unary_delete(ast_node_t *r);
 
 ast_number_t *ast_number_new(ast_number_internal_t num, ast_node_type_t type);
-void       ast_number_print(ast_node_t *r);
-void       ast_number_delete(ast_node_t *r);
+void         ast_number_print(ast_node_t *r);
+void         ast_number_delete(ast_node_t *r);
 
-void       ast_print_buf_new(void);
-void       ast_print_buf_delete(void);
+void          ast_print_buf_new(void);
+void          ast_print_buf_delete(void);
 ast_op_type_t ast_convert_toktype_to_astoptype(tokentype_t op);
 #endif // __BASICAL_AST_H__
