@@ -24,6 +24,7 @@ typedef enum error_type {
     EEOP,
     EENL,
     EMAF,
+    EECP,
 } error_type_t;
 
 struct error_manager {

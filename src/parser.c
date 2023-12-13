@@ -69,13 +69,33 @@ static ast_node_t *parser_parse_num(parser_t *parser) {
     return NULL;
 }
 
+static ast_node_t *parser_parse_group(parser_t *parser) {
+    parser_nexttok(parser);
+    ast_node_t *expr = parser_parse_expr(parser);
+    if (!parser_is_next(parser, (tokentype_t[1]){ t_rparen }, 1)) {
+        token_t tok = parser_nexttok(parser);
+        em_parsing_error(EECP, tok.ln, tok.col);
+        parser->error_occured = true;
+        if (expr) expr->delete(expr);
+        return NULL;
+    }
+
+    if (!expr && parser_is_next(parser, (tokentype_t[1]){ t_rparen }, 1)) {
+        token_t tok = parser_nexttok(parser);
+        em_parsing_error(EEEXP, tok.ln, tok.col);
+        parser->error_occured = true;
+        return NULL;
+    }
+    parser_nexttok(parser);
+    return expr;
+}
+
 static ast_node_t *parser_parse_unary(parser_t *parser) {
     if (parser_is_next(parser, (tokentype_t[1]){ t_lparen }, 1)) {
-        // TODO: parser group statement
-        return NULL;
+        return parser_parse_group(parser);
     } else if (parser_is_next(parser, (tokentype_t[2]){ t_iliteral, t_fliteral }, 2)) {
         return parser_parse_num(parser);
-    } else if (parser_is_next(parser, (tokentype_t[1]){ t_eof }, 1)) {
+    } else if (parser_is_next(parser, (tokentype_t[2]){ t_eof, t_rparen }, 2)) {
         return NULL;   
     } else {
         token_t tok = parser_nexttok(parser);
