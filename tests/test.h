@@ -7,9 +7,7 @@
 #define __BASICAL_TEST_H__
 
 #include "../src/common.h"
-#include <assert.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdbool.h>
 
 #ifdef __linux
@@ -41,13 +39,13 @@ extern tester_t g_tester;
         ++g_tester.errors; \
         if (g_tester.should_exit) { --g_tester.errors; break; }\
         if ((expr) != expected) { \
-            fprintf(stderr, "(Test %d) [Test %s]:%s\n", \
+            fprintf(stderr, "(Test #%d) [Testing %s]:%s\n", \
                     g_tester.tests, #expr, TEST_FAILED); \
             if (do_exit) g_tester.should_exit = do_exit;\
         } else { \
             --g_tester.errors; \
             ++g_tester.passed; \
-            fprintf(stderr, "(Test %d) [Test %s]:%s\n", \
+            fprintf(stderr, "(Test #%d) [Testing %s]:%s\n", \
                     g_tester.tests, #expr, TEST_PASSED); \
         } \
     } while(0)

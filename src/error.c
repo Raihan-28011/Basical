@@ -8,12 +8,13 @@
 #include <stdarg.h>
 
 char *error_type_to_str[] = {
-    "could not open file",         // ECNOF
-    "could not read file",         // ECNRF
-    "expected expression",         // EEEXP
-    "expected operator",           // EEOP
-    "expected newline",            // EENL
-    "memory allocation failed",    // EMAF
+    "could not open file",              // ECNOF
+    "could not read file",              // ECNRF
+    "expected expression",              // EEEXP
+    "expected operator",                // EEOP
+    "expected newline",                 // EENL
+    "memory allocation failed",         // EMAF
+    "expected closing parenthesis '('", // EECP
 };
 
 error_manager_t em = {
