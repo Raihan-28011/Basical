@@ -16,6 +16,7 @@ struct parser {
     i16_t         curtok;        // Current token position
     i16_t         tsize;         // No. of tokens
     bool          error_occured; // Has error occured
+    bool          ignore_newline;// Can ignore newline
     lexer_t const *lexer;        // The lexer containing all the tokens
 };
 

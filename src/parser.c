@@ -34,11 +34,17 @@ void parser_delete(parser_t *parser) {
 }
 
 inline static token_t parser_nexttok(parser_t *parser) {
-    return lexer_get_token(parser->lexer, parser->curtok++);
+    token_t tok = lexer_get_token(parser->lexer, parser->curtok++);
+    while (parser->ignore_newline && tok.type == t_newline)
+        tok = lexer_get_token(parser->lexer, parser->curtok++);
+    return tok;
 }
 
 inline static token_t parser_peektok(parser_t *parser, i16_t offset) {
-    return lexer_get_token(parser->lexer, parser->curtok + offset);
+    token_t tok = lexer_get_token(parser->lexer, parser->curtok + offset++);
+    while (parser->ignore_newline && tok.type == t_newline)
+        tok = lexer_get_token(parser->lexer, parser->curtok + offset++);
+    return tok;
 }
 
 inline static bool parser_match(parser_t *parser, tokentype_t type, i16_t offset) {
@@ -71,12 +77,14 @@ static ast_node_t *parser_parse_num(parser_t *parser) {
 
 static ast_node_t *parser_parse_group(parser_t *parser) {
     parser_nexttok(parser);
+    parser->ignore_newline = true;
     ast_node_t *expr = parser_parse_expr(parser);
     if (!parser_is_next(parser, (tokentype_t[1]){ t_rparen }, 1)) {
         token_t tok = parser_nexttok(parser);
         em_parsing_error(EECP, tok.ln, tok.col);
         parser->error_occured = true;
         if (expr) expr->delete(expr);
+        parser->ignore_newline = false;
         return NULL;
     }
 
@@ -84,9 +92,11 @@ static ast_node_t *parser_parse_group(parser_t *parser) {
         token_t tok = parser_nexttok(parser);
         em_parsing_error(EEEXP, tok.ln, tok.col);
         parser->error_occured = true;
+        parser->ignore_newline = false;
         return NULL;
     }
     parser_nexttok(parser);
+    parser->ignore_newline = false;
     return expr;
 }
 
