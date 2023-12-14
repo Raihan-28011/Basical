@@ -10,7 +10,7 @@
 #include "token.h"
 
 typedef struct ast_node ast_node_t;
-typedef struct ast_module ast_module_t;
+typedef struct ast_package ast_package_t;
 typedef struct ast_stmt ast_stmt_t;
 typedef struct ast_expr ast_expr_t;
 typedef struct ast_term ast_term_t;
@@ -19,7 +19,7 @@ typedef struct ast_unary ast_unary_t;
 typedef struct ast_number ast_number_t;
 typedef union  ast_number_internal ast_number_internal_t;
 typedef enum ast_node_type {
-    ast_node_module,
+    ast_node_package,
     ast_node_stmt,
     ast_node_expr,
     ast_node_term,
@@ -45,7 +45,7 @@ struct ast_node {
     void (*delete)(ast_node_t *r);
 };
 
-struct ast_module {
+struct ast_package {
     ast_node_t base;
     i16_t      size;
     i16_t      cap;
@@ -95,10 +95,10 @@ struct ast_number {
 extern char *ast_print_buf;
 extern i16_t a_blen;
 
-ast_module_t *ast_module_new(void);
-ast_node_t   *ast_module_insert(ast_module_t *main, ast_node_t *stmt);
-void         ast_module_print(ast_node_t *r);
-void         ast_module_delete(ast_node_t *r);
+ast_package_t *ast_package_new(void);
+ast_node_t   *ast_package_insert(ast_package_t *main, ast_node_t *stmt);
+void         ast_package_print(ast_node_t *r);
+void         ast_package_delete(ast_node_t *r);
 
 ast_stmt_t *ast_stmt_new(ast_node_t *expr);
 void       ast_stmt_print(ast_node_t *r);

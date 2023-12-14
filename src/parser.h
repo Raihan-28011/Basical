@@ -22,6 +22,6 @@ struct parser {
 
 parser_t     *parser_new(lexer_t const *lexer);
 void         parser_delete(parser_t *parser);
-ast_module_t *parser_parse(parser_t *parser);
+ast_package_t *parser_parse(parser_t *parser);
 
 #endif // __BASICAL_PARSER_H__
