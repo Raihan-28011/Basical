@@ -34,30 +34,13 @@ lexer_t *lexer_new(void) {
     return _n;
 }
 
-inline static void lexer_reset(lexer_t *lexer, bool error) {
-    lexer->src  = NULL;
-    lexer->slen = 0;
-    lexer->pos  = 0;
-    lexer->line = 1;
-    lexer->error_occured = error;
-}
-
-inline static void lexer_clear(lexer_t *lexer) {
-    if (!lexer) return;
-    if (lexer->src) free((void*)lexer->src);
-    lexer->tcount = 0;
-    lexer->fname  = NULL;
-    lexer_reset(lexer, false);
-}
-
 void lexer_delete(lexer_t *lexer) {
-    lexer_clear(lexer);
+    if (!lexer) return;
     if (lexer->tokens) {
         for (i32_t i = 0; i < lexer->tcount; ++i)
             if (lexer->tokens[i].token) free(lexer->tokens[i].token);
         free(lexer->tokens);
     }
-    lexer->tokens = NULL;
     free(lexer);
 }
 
@@ -188,7 +171,6 @@ static void lexer_push_unrecognized(lexer_t *lexer) {
 }
 
 void lexer_tokenize_string(lexer_t *lexer, const char *src, char const *fname) {
-    lexer_clear(lexer);
     lexer->fname = fname;
     lexer->src   = src;
     lexer->slen  = strlen(src);
@@ -242,7 +224,6 @@ void lexer_tokenize_string(lexer_t *lexer, const char *src, char const *fname) {
         if (lexer->error_occured) break;
     }
     lexer_push(lexer, lexer_make_token(lexer, t_eof, lexer->pos, 0));
-    lexer_reset(lexer, lexer->error_occured);
 }
 
 void lexer_tokenize_file(lexer_t *lexer, const char *fname) {

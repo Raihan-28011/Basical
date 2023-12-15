@@ -47,19 +47,19 @@ static void ast_print_buf_push(char *fmt, ...) {
     ast_print_buf[a_blen] = '\0';
 }
 
-void ast_module_print(ast_node_t *r) {
-    ast_module_t *m = (ast_module_t*)r;
-    ast_print_buf_push("(module\n");
+void ast_package_print(ast_node_t *r) {
+    ast_package_t *m = (ast_package_t*)r;
+    ast_print_buf_push("(package\n");
     ++indent;
     for (i16_t i = 0; i < m->size; ++i) {
         m->stmts[i]->print(m->stmts[i]);
     }
     --indent;
-    ast_print_buf_push("module)\n");
+    ast_print_buf_push("package)\n");
 }
 
-void ast_module_delete(ast_node_t *r) {
-    ast_module_t *m = (ast_module_t*)r;
+void ast_package_delete(ast_node_t *r) {
+    ast_package_t *m = (ast_package_t*)r;
     for (i16_t i = 0; i < m->size; ++i) {
         m->stmts[i]->delete(m->stmts[i]);
     }
@@ -67,13 +67,13 @@ void ast_module_delete(ast_node_t *r) {
     free(m);
 }
 
-ast_module_t *ast_module_new(void) {
-    ast_module_t *_n = (ast_module_t*)malloc(sizeof(ast_module_t));
-    *_n = (ast_module_t) {
+ast_package_t *ast_package_new(void) {
+    ast_package_t *_n = (ast_package_t*)malloc(sizeof(ast_package_t));
+    *_n = (ast_package_t) {
         .base        = {
-            .type    = ast_node_module,
-            .print   = ast_module_print,
-            .delete  = ast_module_delete,
+            .type    = ast_node_package,
+            .print   = ast_package_print,
+            .delete  = ast_package_delete,
         },
         .size       = 0,
         .cap        = 1,
@@ -83,19 +83,19 @@ ast_module_t *ast_module_new(void) {
     return _n;
 }
 
-static void ast_module_resize(ast_module_t *module) {
+static void ast_package_resize(ast_package_t *package) {
 #define AST_MAIN_GROW_FACTOR 2
-    if (module->size + 1 >= module->cap) {
-        module->cap *= AST_MAIN_GROW_FACTOR;
-        module->stmts = (ast_node_t**)realloc(module->stmts,
-                      sizeof(ast_node_t*) * module->cap);
+    if (package->size + 1 >= package->cap) {
+        package->cap *= AST_MAIN_GROW_FACTOR;
+        package->stmts = (ast_node_t**)realloc(package->stmts,
+                      sizeof(ast_node_t*) * package->cap);
     }
 }
 
-ast_node_t *ast_module_insert(ast_module_t *module, ast_node_t *stmt) {
-    ast_module_resize(module);
-    module->stmts[module->size++] = stmt;
-    return (ast_node_t*)module;
+ast_node_t *ast_package_insert(ast_package_t *package, ast_node_t *stmt) {
+    ast_package_resize(package);
+    package->stmts[package->size++] = stmt;
+    return (ast_node_t*)package;
 }
 
 void ast_stmt_print(ast_node_t *r) {

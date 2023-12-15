@@ -15,10 +15,12 @@ char const *token_to_str[] = {
 };
 
 void token_print(token_t *token) {
-    fprintf(stderr, "%s(%d:%d:%d) ", 
-            token_to_str[token->type], 
-            token->ln, 
-            token->col, 
-            token->len);
+    fprintf(stderr, "%s, ", 
+            token_to_str[token->type]
+            // ,
+            // token->ln, 
+            // token->col, 
+            // token->len
+            );
     if (token->type == t_newline || token->type == t_eof) fprintf(stderr, "\n");
 }

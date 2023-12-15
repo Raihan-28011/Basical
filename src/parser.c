@@ -34,11 +34,17 @@ void parser_delete(parser_t *parser) {
 }
 
 inline static token_t parser_nexttok(parser_t *parser) {
-    return lexer_get_token(parser->lexer, parser->curtok++);
+    token_t tok = lexer_get_token(parser->lexer, parser->curtok++);
+    while (parser->ignore_newline && tok.type == t_newline)
+        tok = lexer_get_token(parser->lexer, parser->curtok++);
+    return tok;
 }
 
 inline static token_t parser_peektok(parser_t *parser, i16_t offset) {
-    return lexer_get_token(parser->lexer, parser->curtok + offset);
+    token_t tok = lexer_get_token(parser->lexer, parser->curtok + offset++);
+    while (parser->ignore_newline && tok.type == t_newline)
+        tok = lexer_get_token(parser->lexer, parser->curtok + offset++);
+    return tok;
 }
 
 inline static bool parser_match(parser_t *parser, tokentype_t type, i16_t offset) {
@@ -71,12 +77,14 @@ static ast_node_t *parser_parse_num(parser_t *parser) {
 
 static ast_node_t *parser_parse_group(parser_t *parser) {
     parser_nexttok(parser);
+    parser->ignore_newline = true;
     ast_node_t *expr = parser_parse_expr(parser);
     if (!parser_is_next(parser, (tokentype_t[1]){ t_rparen }, 1)) {
         token_t tok = parser_nexttok(parser);
         em_parsing_error(EECP, tok.ln, tok.col);
         parser->error_occured = true;
         if (expr) expr->delete(expr);
+        parser->ignore_newline = false;
         return NULL;
     }
 
@@ -84,9 +92,11 @@ static ast_node_t *parser_parse_group(parser_t *parser) {
         token_t tok = parser_nexttok(parser);
         em_parsing_error(EEEXP, tok.ln, tok.col);
         parser->error_occured = true;
+        parser->ignore_newline = false;
         return NULL;
     }
     parser_nexttok(parser);
+    parser->ignore_newline = false;
     return expr;
 }
 
@@ -113,6 +123,13 @@ static ast_node_t *parser_parse_factor(parser_t *parser) {
             parser_is_next(parser, (tokentype_t[4]){ t_star, t_slash, t_mod, t_pow }, 4)) {
         tokentype_t op = parser_nexttok(parser).type;
         right = (ast_node_t*)parser_parse_unary(parser);
+        if (!right) {
+            token_t tok = parser_nexttok(parser);
+            em_parsing_error(EEOP, tok.ln, tok.col);
+            parser->error_occured = true;
+            left->delete((ast_node_t*)left);
+            return NULL;
+        }
         left  = (ast_node_t*)ast_factor_new(left, right,
                             ast_convert_toktype_to_astoptype(op));
     }
@@ -128,6 +145,13 @@ static ast_node_t *parser_parse_term(parser_t *parser) {
             parser_is_next(parser, (tokentype_t[2]){ t_plus, t_minus }, 2)) {
         tokentype_t op = parser_nexttok(parser).type;
         right = (ast_node_t*)parser_parse_factor(parser);
+        if (!right) {
+            token_t tok = parser_nexttok(parser);
+            em_parsing_error(EEOP, tok.ln, tok.col);
+            parser->error_occured = true;
+            left->delete((ast_node_t*)left);
+            return NULL;
+        }
         left = (ast_node_t*)ast_term_new(left, right, ast_convert_toktype_to_astoptype(op));
     }
 
@@ -157,22 +181,22 @@ static ast_node_t *parser_parse_stmt(parser_t *parser) {
     return stmt;
 }
 
-ast_module_t *parser_parse(parser_t *parser) {
-    ast_module_t *module = ast_module_new();
+ast_package_t *parser_parse(parser_t *parser) {
+    ast_package_t *package = ast_package_new();
     token_t tok = parser_peektok(parser, 0);
     em_set_fname(parser->lexer->fname);
     em_push_function("__global_main__", tok.ln, tok.col);
     while (!parser->error_occured && tok.type != t_eof) {
         ast_node_t *stmt = (ast_node_t*)parser_parse_stmt(parser);
-        if (stmt) ast_module_insert(module, stmt);
+        if (stmt) ast_package_insert(package, stmt);
         tok = parser_peektok(parser, 0);
     }
     em_pop_function();
 
-    if (parser->error_occured && module) {
-        module->base.delete((ast_node_t*)module);
-        module = NULL;
+    if (parser->error_occured && package) {
+        package->base.delete((ast_node_t*)package);
+        package = NULL;
     }
 
-    return module;
+    return package;
 }
