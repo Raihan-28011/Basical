@@ -43,6 +43,7 @@ struct ast_node {
     ast_node_type_t type;
     void (*print)(ast_node_t *r);
     void (*delete)(ast_node_t *r);
+    void (*evaluate)(ast_node_t *r);
 };
 
 struct ast_package {
@@ -99,32 +100,40 @@ ast_package_t *ast_package_new(void);
 ast_node_t   *ast_package_insert(ast_package_t *main, ast_node_t *stmt);
 void         ast_package_print(ast_node_t *r);
 void         ast_package_delete(ast_node_t *r);
+void         ast_package_evaluate(ast_node_t *r);
 
 ast_stmt_t *ast_stmt_new(ast_node_t *expr);
 void       ast_stmt_print(ast_node_t *r);
 void       ast_stmt_delete(ast_node_t *r);
+void       ast_stmt_evaluate(ast_node_t *r);
 
 ast_expr_t *ast_expr_new(ast_node_t *term);
 void       ast_expr_print(ast_node_t *r);
 void       ast_expr_delete(ast_node_t *r);
+void       ast_expr_evaluate(ast_node_t *r);
 
 ast_term_t *ast_term_new(ast_node_t *left, ast_node_t *right, ast_op_type_t op);
 void       ast_term_print(ast_node_t *r);
 void       ast_term_delete(ast_node_t *r);
+void       ast_term_evaluate(ast_node_t *r);
 
 ast_factor_t *ast_factor_new(ast_node_t *left, ast_node_t *right, ast_op_type_t op);
 void         ast_factor_print(ast_node_t *r);
 void         ast_factor_delete(ast_node_t *r);
+void         ast_factor_evaluate(ast_node_t *r);
 
 ast_unary_t *ast_unary_new(ast_node_t *expr);
 void        ast_unary_print(ast_node_t *r);
 void        ast_unary_delete(ast_node_t *r);
+void        ast_unary_evaluate(ast_node_t *r);
 
 ast_number_t *ast_number_new(ast_number_internal_t num, ast_node_type_t type);
 void         ast_number_print(ast_node_t *r);
 void         ast_number_delete(ast_node_t *r);
+void         ast_number_evaluate(ast_node_t *r);
 
 void          ast_print_buf_new(void);
 void          ast_print_buf_delete(void);
+void          ast_print_buf_evaluate(ast_node_t *r);
 ast_op_type_t ast_convert_toktype_to_astoptype(tokentype_t op);
 #endif // __BASICAL_AST_H__

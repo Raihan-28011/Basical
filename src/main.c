@@ -5,6 +5,7 @@
 
 #include "main.h"
 #include "ast.h"
+#include "evaluate.h"
 #include "lexer.h"
 #include "parser.h"
 #include <ctype.h>
@@ -23,6 +24,7 @@ void atexit_callback(void) {
     if (g_vars.lexer) lexer_delete(g_vars.lexer);
     if (g_vars.parser) parser_delete(g_vars.parser);
     if (ast_print_buf) ast_print_buf_delete();
+    stack_delete();
 }
 
 void usage(void) {
@@ -95,6 +97,7 @@ int repl(void) {
 #ifdef BASICAL_DEBUG
         if (package) {
             package->base.print((ast_node_t*)package);
+            package->base.evaluate((ast_node_t*)package);
             fprintf(stderr, "%s", ast_print_buf);
         }
 #endif
@@ -126,6 +129,7 @@ int main(int argc, char *argv[]) {
 #ifdef BASICAL_DEBUG
     if (m) {
         m->base.print((ast_node_t*)m);
+        m->base.evaluate((ast_node_t*)m);
         fprintf(stderr, "%s", ast_print_buf);
     }
 #endif

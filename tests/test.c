@@ -210,6 +210,14 @@ struct {
             "    stmt)"
             "package)",
     },
+    {
+        .fname = "../tests/expr7.math",
+        .lex_expected = {
+            t_iliteral, t_plus, t_fliteral, t_fliteral, t_newline, 
+            t_eof,
+        },
+        .ast_expected = "",
+    },
 };
 
 static i32_t test_lexer_tokenize_string(void) {

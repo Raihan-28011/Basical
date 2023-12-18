@@ -4,6 +4,7 @@
  */
 
 #include "ast.h"
+#include "evaluate.h"
 #include "token.h"
 #include <stdarg.h>
 #include <stdio.h>
@@ -67,6 +68,13 @@ void ast_package_delete(ast_node_t *r) {
     free(m);
 }
 
+void ast_package_evaluate(ast_node_t *r) {
+    ast_package_t *m = (ast_package_t*)r;
+    for (i16_t i = 0; i < m->size; ++i) {
+        m->stmts[i]->evaluate(m->stmts[i]);
+    }
+}
+
 ast_package_t *ast_package_new(void) {
     ast_package_t *_n = (ast_package_t*)malloc(sizeof(ast_package_t));
     *_n = (ast_package_t) {
@@ -74,6 +82,7 @@ ast_package_t *ast_package_new(void) {
             .type    = ast_node_package,
             .print   = ast_package_print,
             .delete  = ast_package_delete,
+            .evaluate = ast_package_evaluate,
         },
         .size       = 0,
         .cap        = 1,
@@ -113,6 +122,11 @@ void ast_stmt_delete(ast_node_t *r) {
     free(s);
 }
 
+void ast_stmt_evaluate(ast_node_t *r) {
+    ast_stmt_t *s = (ast_stmt_t*)r;
+    if (s->expr) s->expr->evaluate(s->expr);
+}
+
 ast_stmt_t *ast_stmt_new(ast_node_t *expr) {
     ast_stmt_t *_n = (ast_stmt_t*)malloc(sizeof(ast_stmt_t));
     *_n = (ast_stmt_t) {
@@ -120,6 +134,7 @@ ast_stmt_t *ast_stmt_new(ast_node_t *expr) {
             .type   = ast_node_stmt,
             .print  = ast_stmt_print,
             .delete = ast_stmt_delete,
+            .evaluate = ast_stmt_evaluate,
         },
         .expr       = expr,
     };
@@ -141,6 +156,11 @@ void ast_expr_delete(ast_node_t *r) {
     free(e);
 }
 
+void ast_expr_evaluate(ast_node_t *r) {
+    ast_expr_t *e = (ast_expr_t*)r;
+    if (e->term) e->term->evaluate(e->term);
+}
+
 ast_expr_t *ast_expr_new(ast_node_t *term) {
     ast_expr_t *_n  = (ast_expr_t*)malloc(sizeof(ast_expr_t));
     *_n = (ast_expr_t) {
@@ -148,6 +168,7 @@ ast_expr_t *ast_expr_new(ast_node_t *term) {
             .type   = ast_node_expr,
             .print  = ast_expr_print,
             .delete = ast_expr_delete,
+            .evaluate = ast_expr_evaluate,
         },
         .term       = term,
     };
@@ -171,6 +192,23 @@ void ast_term_delete(ast_node_t *r) {
     free(t);
 }
 
+void ast_term_evaluate(ast_node_t *r) {
+    ast_term_t *t = (ast_term_t*)r;
+    if (t->left) t->left->evaluate(t->left);
+    if (t->right) t->right->evaluate(t->right);
+
+    switch (t->op) {
+    case ast_bin_op_plus:
+        evaluate_add();
+        break;
+    case ast_bin_op_minus:
+        evaluate_sub();
+        break;
+    default:
+        break;
+    }
+}
+
 ast_term_t *ast_term_new(ast_node_t *left, ast_node_t *right, ast_op_type_t op) {
     ast_term_t *_n = (ast_term_t*)malloc(sizeof(ast_term_t));
     *_n = (ast_term_t) {
@@ -178,6 +216,7 @@ ast_term_t *ast_term_new(ast_node_t *left, ast_node_t *right, ast_op_type_t op) 
             .type   = ast_node_term,
             .print  = ast_term_print,
             .delete = ast_term_delete,
+            .evaluate = ast_term_evaluate,
         },
         .op         = op,
         .left       = left,
@@ -208,6 +247,28 @@ void ast_factor_delete(ast_node_t *r) {
     free(f);
 }
 
+void ast_factor_evaluate(ast_node_t *r) {
+    ast_factor_t *f = (ast_factor_t*)r;
+    if (f->left) f->left->evaluate(f->left);
+    if (f->right) f->right->evaluate(f->right);
+    switch (f->op) {
+    case ast_bin_op_star:
+        evaluate_mul();
+        break;
+    case ast_bin_op_slash:
+        evaluate_div();
+        break;
+    case ast_bin_op_mod:
+        evaluate_mod();
+        break;
+    case ast_bin_op_pow:
+        evaluate_pow();
+        break;
+    default:
+        break;
+    }
+}
+
 ast_factor_t *ast_factor_new(ast_node_t *left, ast_node_t *right, ast_op_type_t op) {
     ast_factor_t *_n = (ast_factor_t*)malloc(sizeof(ast_factor_t));
     *_n = (ast_factor_t) {
@@ -215,6 +276,7 @@ ast_factor_t *ast_factor_new(ast_node_t *left, ast_node_t *right, ast_op_type_t 
             .type    = ast_node_factor,
             .print   = ast_factor_print,
             .delete  = ast_factor_delete,
+            .evaluate = ast_factor_evaluate,
         },
         .op          = op,
         .left        = left,
@@ -238,6 +300,11 @@ void ast_unary_delete(ast_node_t *r) {
     free(u);
 }
 
+void ast_unary_evaluate(ast_node_t *r) {
+    ast_unary_t *u = (ast_unary_t*)r;
+    if (u->expr) u->expr->evaluate(u->expr);
+}
+
 ast_unary_t *ast_unary_new(ast_node_t *expr) {
     ast_unary_t *_n = (ast_unary_t*)malloc(sizeof(ast_unary_t));
     *_n = (ast_unary_t) {
@@ -245,6 +312,7 @@ ast_unary_t *ast_unary_new(ast_node_t *expr) {
             .type    = ast_node_unary,
             .print   = ast_unary_print,
             .delete  = ast_unary_delete,
+            .evaluate = ast_unary_evaluate,
         },
         .op          = -1,
         .expr        = expr,
@@ -264,6 +332,15 @@ void ast_number_delete(ast_node_t *r) {
     free(r);
 }
 
+void ast_number_evaluate(ast_node_t *r) {
+    ast_number_t *n = (ast_number_t*)r;
+    if (n->base.type == ast_node_inumber) {
+        evaluate_int(n->num.i); 
+    } else {
+        evaluate_float(n->num.f);
+    }
+}
+
 ast_number_t *ast_number_new(ast_number_internal_t num, ast_node_type_t type) {
     ast_number_t *_n = (ast_number_t*)malloc(sizeof(ast_number_t));
     *_n = (ast_number_t) {
@@ -271,6 +348,7 @@ ast_number_t *ast_number_new(ast_number_internal_t num, ast_node_type_t type) {
             .type   = type,
             .print  = ast_number_print,
             .delete = ast_number_delete,
+            .evaluate = ast_number_evaluate,
         },
         .num        = num,
     };
