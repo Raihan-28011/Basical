@@ -14,12 +14,12 @@
 
 typedef struct lexer lexer_t;
 struct lexer {
-    i16_t      tcount;          // No. of tokens
-    i16_t      cap;             // Token Capacity
-    i16_t      line;            // Line no.
-    i16_t      col;             // Column no.
-    i16_t      pos;             // Current position in src
-    i16_t      slen;            // Source string length
+    i32_t      tcount;          // No. of tokens
+    i32_t      cap;             // Token Capacity
+    i32_t      line;            // Line no.
+    i32_t      col;             // Column no.
+    i32_t      pos;             // Current position in src
+    i32_t      slen;            // Source string length
     bool       error_occured;   // Error occured during lexing
     char const *src;            // Source string
     char const *fname;          // File name
@@ -29,7 +29,7 @@ struct lexer {
 lexer_t *lexer_new(void);
 void    lexer_tokenize_string(lexer_t *lexer, char const *src, char const *fname);
 void    lexer_tokenize_file(lexer_t *lexer, char const *fname);
-token_t lexer_get_token(lexer_t const *lexer, i16_t index);
+token_t lexer_get_token(lexer_t const *lexer, i32_t index);
 void    lexer_print_tokens(lexer_t *lexer);
 void    lexer_delete(lexer_t *lexer);
 

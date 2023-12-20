@@ -5,6 +5,7 @@
 
 #include "main.h"
 #include "ast.h"
+#include "evaluate.h"
 #include "lexer.h"
 #include "parser.h"
 #include <ctype.h>
@@ -23,6 +24,7 @@ void atexit_callback(void) {
     if (g_vars.lexer) lexer_delete(g_vars.lexer);
     if (g_vars.parser) parser_delete(g_vars.parser);
     if (ast_print_buf) ast_print_buf_delete();
+    stack_delete();
 }
 
 void usage(void) {
@@ -43,6 +45,7 @@ static char *trim(char *str, i32_t *len) {
 
 int repl(void) {
 #define MAX_BUF_SIZE 1024
+    fprintf(stdout, "Add ';' to the end of every fragment. Type 'quit;' to quit.\n");
     char buf[MAX_BUF_SIZE+1];
     while (true) {
         if (g_vars.lexer) {
@@ -90,16 +93,17 @@ int repl(void) {
         g_vars.lexer = lexer_new();
         lexer_tokenize_string(g_vars.lexer, code, "repl");
         g_vars.parser = parser_new(g_vars.lexer);
-        ast_package_t *package = parser_parse(g_vars.parser);
+        ast_module_t *module = parser_parse(g_vars.parser);
 
 #ifdef BASICAL_DEBUG
-        if (package) {
-            package->base.print((ast_node_t*)package);
+        if (module) {
+            module->base.print((ast_node_t*)module);
+            module->base.evaluate((ast_node_t*)module);
             fprintf(stderr, "%s", ast_print_buf);
         }
 #endif
 
-        if (package) package->base.delete((ast_node_t*)package); 
+        if (module) module->base.delete((ast_node_t*)module); 
     }
     return 0;
 }
@@ -121,11 +125,12 @@ int main(int argc, char *argv[]) {
 #endif
 
     g_vars.parser = parser_new(g_vars.lexer);
-    ast_package_t *m = parser_parse(g_vars.parser);
+    ast_module_t *m = parser_parse(g_vars.parser);
 
 #ifdef BASICAL_DEBUG
     if (m) {
         m->base.print((ast_node_t*)m);
+        m->base.evaluate((ast_node_t*)m);
         fprintf(stderr, "%s", ast_print_buf);
     }
 #endif

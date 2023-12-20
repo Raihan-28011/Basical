@@ -40,19 +40,19 @@ inline static token_t parser_nexttok(parser_t *parser) {
     return tok;
 }
 
-inline static token_t parser_peektok(parser_t *parser, i16_t offset) {
+inline static token_t parser_peektok(parser_t *parser, i32_t offset) {
     token_t tok = lexer_get_token(parser->lexer, parser->curtok + offset++);
     while (parser->ignore_newline && tok.type == t_newline)
         tok = lexer_get_token(parser->lexer, parser->curtok + offset++);
     return tok;
 }
 
-inline static bool parser_match(parser_t *parser, tokentype_t type, i16_t offset) {
+inline static bool parser_match(parser_t *parser, tokentype_t type, i32_t offset) {
     return (parser_peektok(parser, offset).type == type);
 }
 
-inline static bool parser_is_next(parser_t *parser, tokentype_t *types, i16_t size) {
-    for (i16_t i = 0; i < size; ++i) {
+inline static bool parser_is_next(parser_t *parser, tokentype_t *types, i32_t size) {
+    for (i32_t i = 0; i < size; ++i) {
         if (parser_match(parser, types[i], 0)) {
             return true;
         }
@@ -62,6 +62,32 @@ inline static bool parser_is_next(parser_t *parser, tokentype_t *types, i16_t si
 }
 
 static ast_node_t *parser_parse_expr(parser_t *parser);
+
+static ast_node_t *parser_parse_list(parser_t *parser) {
+    parser_nexttok(parser);
+    parser->ignore_newline = true;
+    ast_list_t *list = ast_list_new();
+    while (!parser_is_next(parser, (tokentype_t[2]){ t_rsqbrace, t_eof }, 2)) {
+        ast_node_t *elem = parser_parse_expr(parser);
+        parser->ignore_newline = true;
+        if (elem) ast_list_insert(list, elem);
+        if (parser_is_next(parser, (tokentype_t[1]){ t_comma }, 1))
+            parser_nexttok(parser);
+    }
+
+    if (!parser_is_next(parser, (tokentype_t[1]){ t_rsqbrace }, 1)) {
+        token_t tok = parser_nexttok(parser);
+        em_parsing_error(EECSB, tok.ln, tok.col);
+        parser->error_occured = true;
+        list->base.delete((ast_node_t*)list);
+        parser->ignore_newline = false;
+        return NULL;
+    }
+
+    parser_nexttok(parser);
+    parser->ignore_newline = false;
+    return (ast_node_t*)list;
+}
 
 static ast_node_t *parser_parse_num(parser_t *parser) {
     if (parser_is_next(parser, (tokentype_t[2]) { t_iliteral, t_fliteral }, 2)) {
@@ -73,6 +99,22 @@ static ast_node_t *parser_parse_num(parser_t *parser) {
     }
 
     return NULL;
+}
+
+static ast_node_t *parser_parse_atom(parser_t *parser) {
+    if (parser_is_next(parser, (tokentype_t[1]) { t_lsqbrace }, 1)) {
+        return parser_parse_list(parser);
+    } else if (parser_is_next(parser, (tokentype_t[2]){ t_iliteral, t_fliteral }, 2)) {
+        return parser_parse_num(parser);
+    } else if (parser_is_next(parser, (tokentype_t[4]){ t_eof, t_rparen, t_rsqbrace, t_comma }, 4)) {
+        return NULL;   
+    } else {
+        token_t tok = parser_nexttok(parser);
+        em_parsing_error(EEEXP, tok.ln, tok.col);
+        parser->error_occured = true;
+        return NULL;
+    }
+
 }
 
 static ast_node_t *parser_parse_group(parser_t *parser) {
@@ -103,26 +145,41 @@ static ast_node_t *parser_parse_group(parser_t *parser) {
 static ast_node_t *parser_parse_unary(parser_t *parser) {
     if (parser_is_next(parser, (tokentype_t[1]){ t_lparen }, 1)) {
         return parser_parse_group(parser);
-    } else if (parser_is_next(parser, (tokentype_t[2]){ t_iliteral, t_fliteral }, 2)) {
-        return parser_parse_num(parser);
-    } else if (parser_is_next(parser, (tokentype_t[2]){ t_eof, t_rparen }, 2)) {
-        return NULL;   
     } else {
-        token_t tok = parser_nexttok(parser);
-        em_parsing_error(EEEXP, tok.ln, tok.col);
-        parser->error_occured = true;
-        return NULL;
+        return parser_parse_atom(parser);
     }
 }
 
-static ast_node_t *parser_parse_factor(parser_t *parser) {
-    ast_node_t *left = (ast_node_t*)parser_parse_unary(parser);
+static ast_node_t *parser_parse_power(parser_t *parser) {
+    ast_node_t *left = parser_parse_unary(parser);
     if (!left) return NULL;
     ast_node_t *right = NULL;
     while (!parser->error_occured && 
-            parser_is_next(parser, (tokentype_t[4]){ t_star, t_slash, t_mod, t_pow }, 4)) {
+            parser_is_next(parser, (tokentype_t[1]){ t_pow }, 1)) {
         tokentype_t op = parser_nexttok(parser).type;
-        right = (ast_node_t*)parser_parse_unary(parser);
+        right = parser_parse_unary(parser);
+        if (!right) {
+            token_t tok = parser_nexttok(parser);
+            em_parsing_error(EEOP, tok.ln, tok.col);
+            parser->error_occured = true;
+            left->delete((ast_node_t*)left);
+            return NULL;
+        }
+        left  = (ast_node_t*)ast_factor_new(left, right,
+                            ast_convert_toktype_to_astoptype(op));
+    }
+
+    return left;
+}
+
+static ast_node_t *parser_parse_factor(parser_t *parser) {
+    ast_node_t *left = parser_parse_power(parser);
+    if (!left) return NULL;
+    ast_node_t *right = NULL;
+    while (!parser->error_occured && 
+            parser_is_next(parser, (tokentype_t[3]){ t_star, t_slash, t_mod }, 3)) {
+        tokentype_t op = parser_nexttok(parser).type;
+        right = parser_parse_power(parser);
         if (!right) {
             token_t tok = parser_nexttok(parser);
             em_parsing_error(EEOP, tok.ln, tok.col);
@@ -138,7 +195,7 @@ static ast_node_t *parser_parse_factor(parser_t *parser) {
 }
 
 static ast_node_t *parser_parse_term(parser_t *parser) {
-    ast_node_t *left = (ast_node_t*)parser_parse_factor(parser); 
+    ast_node_t *left = parser_parse_factor(parser); 
     if (!left) return NULL;
     ast_node_t *right = NULL;
     while (!parser->error_occured && 
@@ -181,22 +238,22 @@ static ast_node_t *parser_parse_stmt(parser_t *parser) {
     return stmt;
 }
 
-ast_package_t *parser_parse(parser_t *parser) {
-    ast_package_t *package = ast_package_new();
+ast_module_t *parser_parse(parser_t *parser) {
+    ast_module_t *module = ast_module_new();
     token_t tok = parser_peektok(parser, 0);
     em_set_fname(parser->lexer->fname);
     em_push_function("__global_main__", tok.ln, tok.col);
     while (!parser->error_occured && tok.type != t_eof) {
-        ast_node_t *stmt = (ast_node_t*)parser_parse_stmt(parser);
-        if (stmt) ast_package_insert(package, stmt);
+        ast_node_t *stmt = parser_parse_stmt(parser);
+        if (stmt) ast_module_insert(module, stmt);
         tok = parser_peektok(parser, 0);
     }
     em_pop_function();
 
-    if (parser->error_occured && package) {
-        package->base.delete((ast_node_t*)package);
-        package = NULL;
+    if (parser->error_occured && module) {
+        module->base.delete((ast_node_t*)module);
+        module = NULL;
     }
 
-    return package;
+    return module;
 }

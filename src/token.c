@@ -11,6 +11,8 @@ char const *token_to_str[] = {
   "t_plus", "t_minus", "t_star", "t_slash",
   "t_mod", "t_pow", 
   "t_lparen", "t_rparen",
+  "t_lsqbrace", "t_rsqbrace",
+  "t_comma",
   "t_iliteral", "t_fliteral", 
 };
 

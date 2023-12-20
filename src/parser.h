@@ -13,8 +13,8 @@
 
 typedef struct parser parser_t;
 struct parser {
-    i16_t         curtok;        // Current token position
-    i16_t         tsize;         // No. of tokens
+    i32_t         curtok;        // Current token position
+    i32_t         tsize;         // No. of tokens
     bool          error_occured; // Has error occured
     bool          ignore_newline;// Can ignore newline
     lexer_t const *lexer;        // The lexer containing all the tokens
@@ -22,6 +22,6 @@ struct parser {
 
 parser_t     *parser_new(lexer_t const *lexer);
 void         parser_delete(parser_t *parser);
-ast_package_t *parser_parse(parser_t *parser);
+ast_module_t *parser_parse(parser_t *parser);
 
 #endif // __BASICAL_PARSER_H__

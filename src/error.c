@@ -8,13 +8,14 @@
 #include <stdarg.h>
 
 char *error_type_to_str[] = {
-    "could not open file",              // ECNOF
-    "could not read file",              // ECNRF
-    "expected expression",              // EEEXP
-    "expected operator",                // EEOP
-    "expected newline",                 // EENL
-    "memory allocation failed",         // EMAF
-    "expected closing parenthesis '('", // EECP
+    "could not open file",               // ECNOF
+    "could not read file",               // ECNRF
+    "expected expression",               // EEEXP
+    "expected operator",                 // EEOP
+    "expected newline",                  // EENL
+    "memory allocation failed",          // EMAF
+    "expected closing parenthesis ')'",  // EECP
+    "expected closing square brace ']'", // EECSB
 };
 
 error_manager_t em = {
@@ -38,14 +39,14 @@ void em_error(error_type_t type, char const *fmt, ...) {
 }
 
 
-void em_parsing_error(error_type_t type, i16_t line, i16_t col) {
+void em_parsing_error(error_type_t type, i32_t line, i32_t col) {
     fprintf(stderr, "error: %s:%d:%d: at function '%s': %s\n", 
             em.fname, 
             line, 
             col, 
             em.call_stack[em.cssize-1].name, 
             error_type_to_str[type]);
-    for (i16_t i = 0; i < em.cssize; ++i) {
+    for (i32_t i = 0; i < em.cssize; ++i) {
         fprintf(stderr, "\tcalled from %s:%d:%d:%s()\n", 
                 em.fname, 
                 em.call_stack[i].ln, 
@@ -54,7 +55,7 @@ void em_parsing_error(error_type_t type, i16_t line, i16_t col) {
     }
 }
 
-void em_push_function(char *name, i16_t line, i16_t col) {
+void em_push_function(char *name, i32_t line, i32_t col) {
     if (em.cssize + 1 > MAX_CALL_STACK_LIMIT) {
         fprintf(stderr, "fatal: at function %s:%d:%d: call stack limit exceeded\n", 
                 em.fname, 

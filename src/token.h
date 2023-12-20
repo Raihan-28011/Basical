@@ -18,6 +18,8 @@ typedef enum tokentype {
 
   /* Delimeters */
   t_lparen, t_rparen,
+  t_lsqbrace, t_rsqbrace,
+  t_comma,
 
  /* Literals */
   t_iliteral, t_fliteral,
@@ -25,8 +27,8 @@ typedef enum tokentype {
 
 typedef struct token token_t;
 struct token {
-    i16_t       len;     // Length of the token
-    i16_t       ln, col; // Line and column of the token
+    i32_t       len;     // Length of the token
+    i32_t       ln, col; // Line and column of the token
     tokentype_t type;    // Token type
     char        *token;  // Token string
 };
