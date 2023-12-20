@@ -44,7 +44,7 @@ struct {
             t_eof, 
         },
         .ast_expected = 
-            "(package"
+            "(module"
             "    (stmt"
             "        (expr"
             "            (factor"
@@ -63,7 +63,7 @@ struct {
             "            term)"
             "        expr)"
             "    stmt)"
-            "package)",
+            "module)",
     },
     {
         .fname = "../tests/expr2.math",
@@ -75,7 +75,7 @@ struct {
             t_eof, 
         },
         .ast_expected = 
-            "(package"
+            "(module"
             "    (stmt"
             "        (expr"
             "            (factor"
@@ -94,7 +94,7 @@ struct {
             "            term)"
             "        expr)"
             "    stmt)"
-            "package)",
+            "module)",
     },
     {
         .fname = "../tests/expr3.math",
@@ -115,7 +115,7 @@ struct {
             t_rparen, t_newline, t_eof,
         },
         .ast_expected = 
-            "(package"
+            "(module"
             "    (stmt"
             "        (expr"
             "            (term"
@@ -143,7 +143,7 @@ struct {
             "            term)"
             "        expr)"
             "    stmt)"
-            "package)",
+            "module)",
     },
     {
         .fname = "../tests/expr5.math",
@@ -157,7 +157,7 @@ struct {
             t_newline, t_eof,
         },
         .ast_expected = 
-            "(package"
+            "(module"
             "    (stmt"
             "        (expr"
             "            (expr"
@@ -185,7 +185,7 @@ struct {
             "            expr)"
             "        expr)"
             "    stmt)"
-            "package)",
+            "module)",
     },
     {
         .fname = "../tests/expr6.math",
@@ -200,7 +200,7 @@ struct {
             t_eof, 
         },
         .ast_expected = 
-            "(package"
+            "(module"
             "    (stmt"
             "        (expr"
             "            (expr"
@@ -208,7 +208,7 @@ struct {
             "            expr)"
             "        expr)"
             "    stmt)"
-            "package)",
+            "module)",
     },
     {
         .fname = "../tests/expr7.math",
@@ -274,16 +274,16 @@ static i32_t test_parser_parse(void) {
         lexer_t *lexer = lexer_new();
         lexer_tokenize_file(lexer, g_tests[i].fname);
         parser_t *parser = parser_new(lexer);
-        ast_package_t *package = parser_parse(parser);
-        if (package) {
+        ast_module_t *module = parser_parse(parser);
+        if (module) {
             if (ast_print_buf && 
                 strncmp(ast_print_buf, g_tests[i].ast_expected, a_blen) != 0) {
                 fprintf(stderr, "(Test #%d:#%d) " TEST_FAILED "\n", g_tester.tests, i+1);
                 failed = true;
                 continue;
             }
-            package->base.print((ast_node_t*)package);
-            package->base.delete((ast_node_t*)package);
+            module->base.print((ast_node_t*)module);
+            module->base.delete((ast_node_t*)module);
         }        
         fprintf(stderr, "(Test #%d:#%d) " TEST_PASSED "\n", g_tester.tests, i+1);
         lexer_delete(lexer);

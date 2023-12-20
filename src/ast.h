@@ -10,23 +10,27 @@
 #include "token.h"
 
 typedef struct ast_node ast_node_t;
-typedef struct ast_package ast_package_t;
+typedef struct ast_module ast_module_t;
 typedef struct ast_stmt ast_stmt_t;
 typedef struct ast_expr ast_expr_t;
 typedef struct ast_term ast_term_t;
 typedef struct ast_factor ast_factor_t;
 typedef struct ast_unary ast_unary_t;
+typedef struct ast_atom ast_atom_t;
 typedef struct ast_number ast_number_t;
 typedef union  ast_number_internal ast_number_internal_t;
+typedef struct ast_list ast_list_t;
 typedef enum ast_node_type {
-    ast_node_package,
+    ast_node_module,
     ast_node_stmt,
     ast_node_expr,
     ast_node_term,
     ast_node_factor,
     ast_node_unary, 
+    ast_node_atom,
     ast_node_inumber,
     ast_node_fnumber,
+    ast_node_list,
 } ast_node_type_t;
 
 typedef enum ast_op_type {
@@ -46,10 +50,10 @@ struct ast_node {
     void (*evaluate)(ast_node_t *r);
 };
 
-struct ast_package {
+struct ast_module {
     ast_node_t base;
-    i16_t      size;
-    i16_t      cap;
+    i32_t      size;
+    i32_t      cap;
     ast_node_t **stmts;
 };
 
@@ -83,6 +87,11 @@ struct ast_unary {
     ast_node_t    *expr;
 };
 
+struct ast_atom {
+    ast_node_t base;
+    ast_node_t *atom;
+};
+
 union ast_number_internal {
     i64_t i;
     f64_t f;
@@ -93,14 +102,21 @@ struct ast_number {
     ast_number_internal_t num;
 };
 
-extern char *ast_print_buf;
-extern i16_t a_blen;
+struct ast_list {
+    ast_node_t base;
+    ast_node_t **elems;
+    i32_t      len;
+    i32_t      cap;
+};
 
-ast_package_t *ast_package_new(void);
-ast_node_t   *ast_package_insert(ast_package_t *main, ast_node_t *stmt);
-void         ast_package_print(ast_node_t *r);
-void         ast_package_delete(ast_node_t *r);
-void         ast_package_evaluate(ast_node_t *r);
+extern char *ast_print_buf;
+extern i32_t a_blen;
+
+ast_module_t *ast_module_new(void);
+ast_node_t   *ast_module_insert(ast_module_t *main, ast_node_t *stmt);
+void         ast_module_print(ast_node_t *r);
+void         ast_module_delete(ast_node_t *r);
+void         ast_module_evaluate(ast_node_t *r);
 
 ast_stmt_t *ast_stmt_new(ast_node_t *expr);
 void       ast_stmt_print(ast_node_t *r);
@@ -127,10 +143,21 @@ void        ast_unary_print(ast_node_t *r);
 void        ast_unary_delete(ast_node_t *r);
 void        ast_unary_evaluate(ast_node_t *r);
 
+ast_atom_t *ast_atom_new(ast_node_t *atom);
+void       ast_atom_print(ast_node_t *r);
+void       ast_atom_delete(ast_node_t *r);
+void       ast_atom_evaluate(ast_node_t *r);
+
 ast_number_t *ast_number_new(ast_number_internal_t num, ast_node_type_t type);
 void         ast_number_print(ast_node_t *r);
 void         ast_number_delete(ast_node_t *r);
 void         ast_number_evaluate(ast_node_t *r);
+
+ast_list_t *ast_list_new(void);
+ast_node_t *ast_list_insert(ast_list_t *list, ast_node_t *elem);
+void       ast_list_print(ast_node_t *r);
+void       ast_list_delete(ast_node_t *r);
+void       ast_list_evaluate(ast_node_t *r);
 
 void          ast_print_buf_new(void);
 void          ast_print_buf_delete(void);

@@ -6,6 +6,7 @@
 #ifndef __BASICAL_EVALUATE_H__
 #define __BASICAL_EVALUATE_H__
 
+#include "ast.h"
 #include "common.h"
 #include "value.h"
 
@@ -24,6 +25,7 @@ void evaluate_mod(void);
 void evaluate_pow(void);
 void evaluate_int(i64_t i);
 void evaluate_float(f64_t f);
+void evaluate_list(ast_list_t *list);
 
 void stack_delete(void);
 

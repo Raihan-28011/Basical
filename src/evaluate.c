@@ -4,6 +4,7 @@
  */
 
 #include "evaluate.h"
+#include "ast.h"
 #include "value.h"
 #include <math.h>
 #include <stdbool.h>
@@ -31,12 +32,6 @@ static void stack_push(value_t *v) {
     stack.mem[stack.top++] = v;
 }
 
-static value_t *stack_at(i32_t pos) {
-    if (pos >= stack.top || pos < 0) return NULL;
-    value_incref(stack.mem[pos]);
-    return stack.mem[pos];
-}
-
 static value_t *stack_pop(void) {
     if (stack.top == 0) return NULL;
     --stack.top;
@@ -44,13 +39,15 @@ static value_t *stack_pop(void) {
 }
 
 static void stack_print(void) {
-    fprintf(stderr, "|            |\n");
+#define SPACES 24
+    fprintf(stderr, "|%*s%*s|\n", (SPACES-5)/2+5, "Stack", (SPACES-5+1)/2, " ");
+    fprintf(stderr, "|                        |\n");
     for (i32_t i = stack.top-1; i >= 0; --i) {
         char *buf;
-        fprintf(stderr, "|%12s|\n", (buf = value_to_str(stack.mem[i])));
+        fprintf(stderr, "|%*s|\n", SPACES, (buf = value_to_str(stack.mem[i])));
         if (buf) free(buf);
     }
-    fprintf(stderr, "______________\n");
+    fprintf(stderr, "|________________________|\n\n");
 }
 
 void stack_delete(void) {
@@ -223,5 +220,18 @@ void evaluate_float(f64_t f) {
     value_t *v = (value_t*)value_float_new(f);
     stack_push(v);
     value_decref(v);
+    stack_print();
+}
+
+void evaluate_list(ast_list_t *list) {
+    value_list_t *l = value_list_new();
+    for (i32_t i = 0; i < list->len; ++i) {
+        list->elems[i]->evaluate(list->elems[i]);
+        value_t *v = stack_pop();
+        value_list_push(l, v);
+        value_decref(v);
+    }
+    stack_push((value_t*)l);
+    value_decref((value_t*)l);
     stack_print();
 }

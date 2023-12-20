@@ -21,12 +21,12 @@ char const *ast_op_type_to_str[] = {
    "(unknown)",
 };
 
-i16_t indent = 0;
+i32_t indent = 0;
 char *ast_print_buf = NULL;
-i16_t a_blen = 0;
-i16_t a_bcap = 1;
+i32_t a_blen = 0;
+i32_t a_bcap = 1;
 
-static void ast_print_buf_resize(i16_t nlen) {
+static void ast_print_buf_resize(i32_t nlen) {
 #define AST_PRINT_BUF_GROW_FACTOR 2
     if (nlen >= a_bcap) {
         a_bcap *= AST_PRINT_BUF_GROW_FACTOR;
@@ -39,72 +39,72 @@ static void ast_print_buf_push(char *fmt, ...) {
     char buf[1025];
     va_list list;
     va_start(list, fmt);
-    i16_t n = vsnprintf(buf, 1024, fmt, list);
+    i32_t n = vsnprintf(buf, 1024, fmt, list);
     va_end(list);
 
-    ast_print_buf_resize(a_blen + n);
+    ast_print_buf_resize(a_blen + n + 1);
     memcpy(ast_print_buf+a_blen, buf, n);
     a_blen += n;
     ast_print_buf[a_blen] = '\0';
 }
 
-void ast_package_print(ast_node_t *r) {
-    ast_package_t *m = (ast_package_t*)r;
-    ast_print_buf_push("(package\n");
+void ast_module_print(ast_node_t *r) {
+    ast_module_t *m = (ast_module_t*)r;
+    ast_print_buf_push("(module\n");
     ++indent;
-    for (i16_t i = 0; i < m->size; ++i) {
+    for (i32_t i = 0; i < m->size; ++i) {
         m->stmts[i]->print(m->stmts[i]);
     }
     --indent;
-    ast_print_buf_push("package)\n");
+    ast_print_buf_push("module)\n");
 }
 
-void ast_package_delete(ast_node_t *r) {
-    ast_package_t *m = (ast_package_t*)r;
-    for (i16_t i = 0; i < m->size; ++i) {
+void ast_module_delete(ast_node_t *r) {
+    ast_module_t *m = (ast_module_t*)r;
+    for (i32_t i = 0; i < m->size; ++i) {
         m->stmts[i]->delete(m->stmts[i]);
     }
     free(m->stmts);
     free(m);
 }
 
-void ast_package_evaluate(ast_node_t *r) {
-    ast_package_t *m = (ast_package_t*)r;
-    for (i16_t i = 0; i < m->size; ++i) {
+void ast_module_evaluate(ast_node_t *r) {
+    ast_module_t *m = (ast_module_t*)r;
+    for (i32_t i = 0; i < m->size; ++i) {
         m->stmts[i]->evaluate(m->stmts[i]);
     }
 }
 
-ast_package_t *ast_package_new(void) {
-    ast_package_t *_n = (ast_package_t*)malloc(sizeof(ast_package_t));
-    *_n = (ast_package_t) {
-        .base        = {
-            .type    = ast_node_package,
-            .print   = ast_package_print,
-            .delete  = ast_package_delete,
-            .evaluate = ast_package_evaluate,
+ast_module_t *ast_module_new(void) {
+    ast_module_t *_n = (ast_module_t*)malloc(sizeof(ast_module_t));
+    *_n = (ast_module_t) {
+        .base         = {
+            .type     = ast_node_module,
+            .print    = ast_module_print,
+            .delete   = ast_module_delete,
+            .evaluate = ast_module_evaluate,
         },
-        .size       = 0,
-        .cap        = 1,
-        .stmts      = NULL,
+        .size         = 0,
+        .cap          = 1,
+        .stmts        = NULL,
     };
     ast_print_buf_new();
     return _n;
 }
 
-static void ast_package_resize(ast_package_t *package) {
+static void ast_module_resize(ast_module_t *module) {
 #define AST_MAIN_GROW_FACTOR 2
-    if (package->size + 1 >= package->cap) {
-        package->cap *= AST_MAIN_GROW_FACTOR;
-        package->stmts = (ast_node_t**)realloc(package->stmts,
-                      sizeof(ast_node_t*) * package->cap);
+    if (module->size + 1 >= module->cap) {
+        module->cap *= AST_MAIN_GROW_FACTOR;
+        module->stmts = (ast_node_t**)realloc(module->stmts,
+                      sizeof(ast_node_t*) * module->cap);
     }
 }
 
-ast_node_t *ast_package_insert(ast_package_t *package, ast_node_t *stmt) {
-    ast_package_resize(package);
-    package->stmts[package->size++] = stmt;
-    return (ast_node_t*)package;
+ast_node_t *ast_module_insert(ast_module_t *module, ast_node_t *stmt) {
+    ast_module_resize(module);
+    module->stmts[module->size++] = stmt;
+    return (ast_node_t*)module;
 }
 
 void ast_stmt_print(ast_node_t *r) {
@@ -130,13 +130,13 @@ void ast_stmt_evaluate(ast_node_t *r) {
 ast_stmt_t *ast_stmt_new(ast_node_t *expr) {
     ast_stmt_t *_n = (ast_stmt_t*)malloc(sizeof(ast_stmt_t));
     *_n = (ast_stmt_t) {
-        .base       = {
-            .type   = ast_node_stmt,
-            .print  = ast_stmt_print,
-            .delete = ast_stmt_delete,
+        .base         = {
+            .type     = ast_node_stmt,
+            .print    = ast_stmt_print,
+            .delete   = ast_stmt_delete,
             .evaluate = ast_stmt_evaluate,
         },
-        .expr       = expr,
+        .expr         = expr,
     };
     return _n;
 }
@@ -164,13 +164,13 @@ void ast_expr_evaluate(ast_node_t *r) {
 ast_expr_t *ast_expr_new(ast_node_t *term) {
     ast_expr_t *_n  = (ast_expr_t*)malloc(sizeof(ast_expr_t));
     *_n = (ast_expr_t) {
-        .base       = {
-            .type   = ast_node_expr,
-            .print  = ast_expr_print,
-            .delete = ast_expr_delete,
+        .base         = {
+            .type     = ast_node_expr,
+            .print    = ast_expr_print,
+            .delete   = ast_expr_delete,
             .evaluate = ast_expr_evaluate,
         },
-        .term       = term,
+        .term         = term,
     };
     return _n;
 }
@@ -212,15 +212,15 @@ void ast_term_evaluate(ast_node_t *r) {
 ast_term_t *ast_term_new(ast_node_t *left, ast_node_t *right, ast_op_type_t op) {
     ast_term_t *_n = (ast_term_t*)malloc(sizeof(ast_term_t));
     *_n = (ast_term_t) {
-        .base       = {
-            .type   = ast_node_term,
-            .print  = ast_term_print,
-            .delete = ast_term_delete,
+        .base         = {
+            .type     = ast_node_term,
+            .print    = ast_term_print,
+            .delete   = ast_term_delete,
             .evaluate = ast_term_evaluate,
         },
-        .op         = op,
-        .left       = left,
-        .right      = right,
+        .op           = op,
+        .left         = left,
+        .right        = right,
     };
     return _n;
 }
@@ -272,15 +272,15 @@ void ast_factor_evaluate(ast_node_t *r) {
 ast_factor_t *ast_factor_new(ast_node_t *left, ast_node_t *right, ast_op_type_t op) {
     ast_factor_t *_n = (ast_factor_t*)malloc(sizeof(ast_factor_t));
     *_n = (ast_factor_t) {
-        .base        = {
-            .type    = ast_node_factor,
-            .print   = ast_factor_print,
-            .delete  = ast_factor_delete,
+        .base         = {
+            .type     = ast_node_factor,
+            .print    = ast_factor_print,
+            .delete   = ast_factor_delete,
             .evaluate = ast_factor_evaluate,
         },
-        .op          = op,
-        .left        = left,
-        .right       = right,
+        .op           = op,
+        .left         = left,
+        .right        = right,
     };
     return _n;
 }
@@ -308,14 +308,48 @@ void ast_unary_evaluate(ast_node_t *r) {
 ast_unary_t *ast_unary_new(ast_node_t *expr) {
     ast_unary_t *_n = (ast_unary_t*)malloc(sizeof(ast_unary_t));
     *_n = (ast_unary_t) {
-        .base        = {
-            .type    = ast_node_unary,
-            .print   = ast_unary_print,
-            .delete  = ast_unary_delete,
+        .base         = {
+            .type     = ast_node_unary,
+            .print    = ast_unary_print,
+            .delete   = ast_unary_delete,
             .evaluate = ast_unary_evaluate,
         },
-        .op          = -1,
-        .expr        = expr,
+        .op           = -1,
+        .expr         = expr,
+    };
+    return _n;
+}
+
+void ast_atom_print(ast_node_t *r) {
+    ast_atom_t *a = (ast_atom_t*)r;
+    ast_print_buf_push("%*s(atom\n", indent*4, " ");
+    ++indent;
+    if (a->atom) a->atom->print(a->atom);
+    --indent;
+    ast_print_buf_push("%*satom)\n", indent*4, " ");
+}
+
+void ast_atom_delete(ast_node_t *r) {
+    ast_atom_t *a = (ast_atom_t*)r;
+    if (a->atom) a->atom->delete(a->atom);
+    free(a);
+}
+
+void ast_atom_evaluate(ast_node_t *r) {
+    ast_atom_t *a = (ast_atom_t*)r;
+    if (a->atom) a->atom->evaluate(a->atom);
+}
+
+ast_atom_t *ast_atom_new(ast_node_t *atom) {
+    ast_atom_t *_n = (ast_atom_t*)malloc(sizeof(ast_atom_t));
+    *_n = (ast_atom_t) {
+        .base         = {
+            .type     = ast_node_atom,
+            .print    = ast_atom_print,
+            .delete   = ast_atom_delete,
+            .evaluate = ast_atom_evaluate,
+        },
+        .atom         = atom,
     };
     return _n;
 }
@@ -344,16 +378,74 @@ void ast_number_evaluate(ast_node_t *r) {
 ast_number_t *ast_number_new(ast_number_internal_t num, ast_node_type_t type) {
     ast_number_t *_n = (ast_number_t*)malloc(sizeof(ast_number_t));
     *_n = (ast_number_t) {
-        .base       = {
-            .type   = type,
-            .print  = ast_number_print,
-            .delete = ast_number_delete,
+        .base         = {
+            .type     = type,
+            .print    = ast_number_print,
+            .delete   = ast_number_delete,
             .evaluate = ast_number_evaluate,
         },
-        .num        = num,
+        .num          = num,
     };
     return _n;
 }
+
+void ast_list_print(ast_node_t *r) {
+    ast_list_t *m = (ast_list_t*)r;
+    ast_print_buf_push("%*s(list\n", indent*4, " ");
+    ++indent;
+    for (i32_t i = 0; i < m->len; ++i) {
+        m->elems[i]->print(m->elems[i]);
+    }
+    --indent;
+    ast_print_buf_push("%*slist)\n", indent*4, " ");
+}
+
+void ast_list_delete(ast_node_t *r) {
+    ast_list_t *m = (ast_list_t*)r;
+    for (i32_t i = 0; i < m->len; ++i) {
+        m->elems[i]->delete(m->elems[i]);
+    }
+    free(m->elems);
+    free(m);
+}
+
+void ast_list_evaluate(ast_node_t *r) {
+    ast_list_t *m = (ast_list_t*)r;
+    evaluate_list(m);
+}
+
+static void ast_list_resize(ast_list_t *list) {
+#define AST_MAIN_GROW_FACTOR 2
+    if (list->len + 1 >= list->cap) {
+        list->cap  *= AST_MAIN_GROW_FACTOR;
+        list->elems = (ast_node_t**)realloc(list->elems,
+                      sizeof(ast_node_t*) * list->cap);
+    }
+}
+
+ast_node_t *ast_list_insert(ast_list_t *list, ast_node_t *elem) {
+    ast_list_resize(list);
+    list->elems[list->len++] = elem;
+    return (ast_node_t*)list;
+}
+
+ast_list_t *ast_list_new(void) {
+    ast_list_t *_n = (ast_list_t*)malloc(sizeof(ast_list_t));
+    *_n = (ast_list_t) {
+        .base         = {
+            .type     = ast_node_list,
+            .print    = ast_list_print,
+            .delete   = ast_list_delete,
+            .evaluate = ast_list_evaluate,
+        },
+        .len          = 0,
+        .cap          = 1,
+        .elems        = NULL,
+    };
+    ast_print_buf_new();
+    return _n;
+}
+
 
 void ast_print_buf_new(void) {
     ast_print_buf_delete(); 
@@ -367,11 +459,11 @@ void ast_print_buf_delete(void) {
 }
 
 ast_op_type_t ast_convert_toktype_to_astoptype(tokentype_t op) {
-    if (op == t_plus) return ast_bin_op_plus;
+    if (op == t_plus)  return ast_bin_op_plus;
     if (op == t_minus) return ast_bin_op_minus;
-    if (op == t_star) return ast_bin_op_star;
+    if (op == t_star)  return ast_bin_op_star;
     if (op == t_slash) return ast_bin_op_slash;
-    if (op == t_mod) return ast_bin_op_mod;
-    if (op == t_pow) return ast_bin_op_pow;
+    if (op == t_mod)   return ast_bin_op_mod;
+    if (op == t_pow)   return ast_bin_op_pow;
     return ast_op_unknown;
 }

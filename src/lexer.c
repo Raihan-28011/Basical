@@ -79,7 +79,12 @@ static char *lexer_read_file(char const *fname) {
 }
 
 inline static bool lexer_isdelim(char c) {
-    return isspace(c) || c == '\0' || c == '(' || c == ')';
+    return isspace(c) ||
+			c == '\0' ||
+			c == '(' ||
+			c == ')' ||
+			c == '[' ||
+			c == ']';
 }
 
 inline static char lexer_nextc(lexer_t *lexer) {
@@ -93,7 +98,7 @@ inline static char lexer_peekc(lexer_t *lexer, i32_t offset) {
     return lexer->src[lexer->pos + offset];
 }
 
-inline static token_t lexer_make_token(lexer_t *lexer, tokentype_t type, i16_t curpos, i16_t len) {
+inline static token_t lexer_make_token(lexer_t *lexer, tokentype_t type, i32_t curpos, i32_t len) {
     token_t token = {
         .type     = type,
         .len      = len,
@@ -134,7 +139,7 @@ static void lexer_skipws(lexer_t *lexer) {
     char c;
     while ((c = lexer_peekc(lexer, 0)) && isspace(c)) {
         if (c == '\n') {
-            lexer_push(lexer, lexer_make_token(lexer, t_newline, lexer->pos, 1));
+            lexer_push(lexer, lexer_make_token(lexer, t_newline, lexer->pos+1, 1));
             ++lexer->line;
             lexer->col = 0;
         }
@@ -215,6 +220,18 @@ void lexer_tokenize_string(lexer_t *lexer, const char *src, char const *fname) {
             lexer_nextc(lexer);
             lexer_push(lexer, lexer_make_token(lexer, t_rparen, lexer->pos, 1));
             break;
+        case '[':
+            lexer_nextc(lexer);
+            lexer_push(lexer, lexer_make_token(lexer, t_lsqbrace, lexer->pos, 1));
+            break;
+        case ']':
+            lexer_nextc(lexer);
+            lexer_push(lexer, lexer_make_token(lexer, t_rsqbrace, lexer->pos, 1));
+            break;
+        case ',':
+            lexer_nextc(lexer);
+            lexer_push(lexer, lexer_make_token(lexer, t_comma, lexer->pos, 1));
+            break;
         default:
             if (isdigit(cur)) lexer_push_number(lexer);
             else lexer_push_unrecognized(lexer);
@@ -236,7 +253,7 @@ void lexer_tokenize_file(lexer_t *lexer, const char *fname) {
     free(src);
 }
 
-token_t lexer_get_token(const lexer_t *lexer, i16_t index) {
+token_t lexer_get_token(const lexer_t *lexer, i32_t index) {
     if (index >= lexer->tcount) return lexer->tokens[lexer->tcount-1];
     return lexer->tokens[index];
 }
